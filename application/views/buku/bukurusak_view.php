@@ -70,12 +70,15 @@
                                 <td><?= $isi['keterangan'] ? $isi['keterangan'] : '-';?></td>
                                 <td><?= $isi['tgl_rusak'] ? date('d/m/Y H:i', strtotime($isi['tgl_rusak'])) : '-';?></td>
                                 <td><?= $isi['nama_petugas'] ? $isi['nama_petugas'] : '-';?></td>
-                                <td>
-                                    <?php if($this->session->userdata('level') == 'Petugas'){?>
-                                    <a href="<?= base_url('data/bukudetail/'.$isi['id_buku']);?>" class="btn btn-primary btn-sm">
-                                        <i class="fa fa-eye"></i> Detail
-                                    </a>
-                                    <?php }?>
+                                <td style="width:25%;">
+								<?php if($this->session->userdata('level') == 'Petugas'){?>
+								<a href="<?= base_url('data/bukudetail/'.$isi['buku_id']);?>" class="btn btn-primary btn-sm">
+									<i class="fa fa-sign-in"></i> Detail
+								</a>
+                                <a href="javascript:void(0)" onclick="konfirmasiPerbaikan(<?= $isi['id'] ?>, '<?= $isi['title'] ?>')" class="btn btn-success btn-sm">
+                                    <i class="fa fa-wrench"></i> Perbaiki
+                                </a>
+								<?php }?>
                                 </td>
                             </tr>
                         <?php $no++;}?>
@@ -89,3 +92,32 @@
     </div>
 </section>
 </div>
+
+<script>
+function konfirmasiPerbaikan(id, title) {
+    Swal.fire({
+        title: 'Konfirmasi Perbaikan',
+        text: 'Apakah buku "' + title + '" sudah selesai diperbaiki?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#dc3545',
+        confirmButtonText: 'Ya, sudah diperbaiki!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?= base_url() ?>data/perbaikan_buku/' + id;
+        }
+    });
+}
+
+<?php if($this->session->flashdata('pesan')) { ?>
+    Swal.fire({
+        icon: '<?= strpos($this->session->flashdata("pesan"), "success") !== false ? "success" : "error" ?>',
+        title: '<?= strpos($this->session->flashdata("pesan"), "success") !== false ? "Berhasil!" : "Gagal!" ?>',
+        html: '<?= $this->session->flashdata("pesan") ?>',
+        timer: 3000,
+        showConfirmButton: false
+    });
+<?php } ?>
+</script>

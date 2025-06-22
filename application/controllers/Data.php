@@ -65,6 +65,51 @@ class Data extends CI_Controller {
         $this->load->view('footer_view',$this->data);
 	}
 
+	public function perbaikan_buku($id)
+	{
+		// Cek level user
+		if($this->session->userdata('level') !== 'Petugas') {
+			$this->session->set_flashdata('pesan', '<div class="alert alert-danger">Anda tidak memiliki hak akses!</div>');
+			redirect('data/bukurusak');
+			return;
+		}
+
+		// Ambil data buku rusak
+		$buku_rusak = $this->db->get_where('tbl_buku_rusak', ['id' => $id])->row();
+		if(!$buku_rusak) {
+			$this->session->set_flashdata('pesan', '<div class="alert alert-danger">Data buku rusak tidak ditemukan!</div>');
+			redirect('data/bukurusak');
+			return;
+		}
+
+		// Mulai transaksi
+		$this->db->trans_start();
+
+		try {
+			// Update stok buku (tambahkan jumlah yang diperbaiki)
+			$this->db->set('jml', 'jml + ' . $buku_rusak->jumlah, FALSE);
+			$this->db->where('id_buku', $buku_rusak->buku_id);
+			$this->db->update('tbl_buku');
+
+			// Hapus data buku rusak
+			$this->db->where('id', $id);
+			$this->db->delete('tbl_buku_rusak');
+
+			$this->db->trans_complete();
+
+			if ($this->db->trans_status() === FALSE) {
+				throw new Exception('Gagal melakukan perbaikan buku!');
+			}
+
+			$this->session->set_flashdata('pesan', '<div class="alert alert-success">Buku berhasil diperbaiki!</div>');
+		} catch (Exception $e) {
+			$this->db->trans_rollback();
+			$this->session->set_flashdata('pesan', '<div class="alert alert-danger">'.$e->getMessage().'</div>');
+		}
+
+		redirect('data/bukurusak');
+	}
+
 	public function bukuedit()
 	{
 		$this->data['idbo'] = $this->session->userdata('ses_id');
