@@ -95,6 +95,16 @@ class Data extends CI_Controller {
 			$this->db->where('id', $id);
 			$this->db->delete('tbl_buku_rusak');
 
+			// Catat ke history
+			$this->db->insert('tbl_history', array(
+				'tipe_transaksi' => 'Perbaikan Buku',
+				'kode_transaksi' => 'PB' . date('YmdHis'),
+				'buku_id' => $buku_rusak->buku_id,
+				'jumlah' => $buku_rusak->jumlah,
+				'keterangan' => 'Buku selesai diperbaiki',
+				'petugas_id' => $this->session->userdata('ses_id')
+			));
+
 			$this->db->trans_complete();
 
 			if ($this->db->trans_status() === FALSE) {
@@ -227,13 +237,24 @@ class Data extends CI_Controller {
 			]);
 
 			// Tambahkan ke log buku rusak
-			$this->db->insert('tbl_buku_rusak', [
+			$data = array(
 				'buku_id' => $buku_id,
 				'jumlah' => $jumlah_rusak,
 				'keterangan' => $keterangan,
 				'tanggal' => date('Y-m-d H:i:s'),
 				'petugas_id' => $this->session->userdata('ses_id')
-			]);
+			);
+			$this->db->insert('tbl_buku_rusak', $data);
+
+			// Catat ke history
+			$this->db->insert('tbl_history', array(
+				'tipe_transaksi' => 'Buku Rusak',
+				'kode_transaksi' => 'BR' . date('YmdHis'),
+				'buku_id' => $buku_id,
+				'jumlah' => $jumlah_rusak,
+				'keterangan' => $keterangan,
+				'petugas_id' => $this->session->userdata('ses_id')
+			));
 
 			$this->db->trans_complete();
 
