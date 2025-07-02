@@ -6,7 +6,7 @@ class Transaksi extends CI_Controller {
 	 parent::__construct();
 	 	//validasi jika user belum login
 		$this->data['CI'] =& get_instance();
-		$this->load->helper(array('form', 'url'));
+		$this->load->helper(array('form', 'url', 'pinjam'));
 		$this->load->model('M_Admin');
 		$this->load->library(array('cart'));
 		if($this->session->userdata('masuk_perpus') != TRUE){
@@ -31,21 +31,56 @@ class Transaksi extends CI_Controller {
 	 * @see https://codeigniter.com/user_guide/general/urls.html
 	 */
 
+	public function hapus_pinjam()
+	{
+		$id_pinjam = $this->input->get('id_pinjam');
+		if($id_pinjam) {
+			// Hapus data dari tbl_pinjam berdasarkan id_pinjam
+			$this->db->where('id_pinjam', $id_pinjam);
+			$delete = $this->db->delete('tbl_pinjam');
+
+			if($delete) {
+				$this->session->set_flashdata('pesan', '<div class="alert alert-success">Data Peminjaman berhasil dihapus!</div>');
+			} else {
+				$this->session->set_flashdata('pesan', '<div class="alert alert-danger">Data Peminjaman gagal dihapus!</div>');
+			}
+		}
+		redirect(base_url('transaksi'));
+	}
+
 	public function index()
 	{	
 		$this->data['title_web'] = 'Data Pinjam Buku';
 		$this->data['idbo'] = $this->session->userdata('ses_id');
-
+		$tanggal_awal = $this->input->get('tanggal_awal');
+		$tanggal_akhir = $this->input->get('tanggal_akhir');
 		if($this->session->userdata('level') == 'Anggota'){
-			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `pinjam_id`, `anggota_id`, 
+			if ($tanggal_awal && $tanggal_akhir) {
+				$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `id_pinjam`, `pinjam_id`, `anggota_id`, 
+					`status`, `tgl_pinjam`, `lama_pinjam`, `tgl_balik`, `tgl_kembali` 
+					FROM tbl_pinjam WHERE status = 'Dipinjam' 
+					AND anggota_id = ? AND DATE(tgl_pinjam) >= ? AND DATE(tgl_pinjam) <= ? 
+					ORDER BY pinjam_id DESC", 
+					array($this->session->userdata('anggota_id'), $tanggal_awal, $tanggal_akhir));
+			} else {
+			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `id_pinjam`, `pinjam_id`, `anggota_id`, 
 				`status`, `tgl_pinjam`, `lama_pinjam`, `tgl_balik`, `tgl_kembali` 
 				FROM tbl_pinjam WHERE status = 'Dipinjam' 
 				AND anggota_id = ? ORDER BY pinjam_id DESC", 
 				array($this->session->userdata('anggota_id')));
+			}
 		}else{
-			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `pinjam_id`, `anggota_id`, 
+			if ($tanggal_awal && $tanggal_akhir) {
+				$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `id_pinjam`, `pinjam_id`, `anggota_id`, 
+					`status`, `tgl_pinjam`, `lama_pinjam`, `tgl_balik`, `tgl_kembali` 
+					FROM tbl_pinjam WHERE status = 'Dipinjam' 
+					AND DATE(tgl_pinjam) >= ? AND DATE(tgl_pinjam) <= ? ORDER BY pinjam_id DESC", 
+					array($tanggal_awal, $tanggal_akhir));
+			} else {
+			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `id_pinjam`, `pinjam_id`, `anggota_id`, 
 				`status`, `tgl_pinjam`, `lama_pinjam`, `tgl_balik`, `tgl_kembali` 
 				FROM tbl_pinjam WHERE status = 'Dipinjam' ORDER BY pinjam_id DESC");
+			}
 		}
 		
 		$this->load->view('header_view',$this->data);
@@ -54,12 +89,19 @@ class Transaksi extends CI_Controller {
 		$this->load->view('footer_view',$this->data);
 	}
 
-	private function get_history_data()
+	private function get_history_data($tanggal_awal = null, $tanggal_akhir = null)
 	{
-		return $this->db->query("
+		$where = '';
+		$params = array();
+		if ($tanggal_awal && $tanggal_akhir) {
+			$where = 'WHERE DATE(h.tanggal) >= ? AND DATE(h.tanggal) <= ?';
+			$params[] = $tanggal_awal;
+			$params[] = $tanggal_akhir;
+		}
+		$query = "
 			SELECT 
 				h.*,
-				b.title as judul_buku,
+				b.judul_buku,
 				b.isbn,
 				l1.nama as nama_petugas,
 				l2.nama as nama_anggota
@@ -67,16 +109,23 @@ class Transaksi extends CI_Controller {
 			LEFT JOIN tbl_buku b ON h.buku_id = b.id_buku
 			LEFT JOIN tbl_login l1 ON h.petugas_id = l1.id_login
 			LEFT JOIN tbl_login l2 ON h.anggota_id = l2.id_login
+			$where
 			ORDER BY h.tanggal DESC
-		")->result_array();
+		";
+		return $this->db->query($query, $params)->result_array();
 	}
 
 	public function history()
 	{
 		$this->data['idbo'] = $this->session->userdata('ses_id');
 		$this->data['title_web'] = 'History Transaksi';
+		$tanggal_awal = $this->input->get('tanggal_awal');
+		$tanggal_akhir = $this->input->get('tanggal_akhir');
+		if ($tanggal_awal && $tanggal_akhir) {
+			$this->data['history'] = $this->get_history_data($tanggal_awal, $tanggal_akhir);
+		} else {
 		$this->data['history'] = $this->get_history_data();
-
+		}
 		$this->load->view('header_view', $this->data);
 		$this->load->view('sidebar_view', $this->data);
 		$this->load->view('transaksi/history_view', $this->data);
@@ -85,21 +134,18 @@ class Transaksi extends CI_Controller {
 
 	public function download_history()
 	{
-		// Get history data
+		$tanggal_awal = $this->input->get('tanggal_awal');
+		$tanggal_akhir = $this->input->get('tanggal_akhir');
+		if ($tanggal_awal && $tanggal_akhir) {
+			$history = $this->get_history_data($tanggal_awal, $tanggal_akhir);
+		} else {
 		$history = $this->get_history_data();
-
-		// Set headers
+		}
 		$filename = 'history_transaksi_' . date('Y-m-d_His') . '.csv';
 		header('Content-Type: text/csv');
 		header('Content-Disposition: attachment; filename="'.$filename.'"');
-
-		// Create a file pointer
 		$output = fopen('php://output', 'w');
-
-		// Add UTF-8 BOM for proper Excel display
 		fputs($output, "\xEF\xBB\xBF");
-
-		// Add the header row
 		fputcsv($output, array(
 			'Tanggal',
 			'Tipe Transaksi',
@@ -110,8 +156,6 @@ class Transaksi extends CI_Controller {
 			'Petugas',
 			'Keterangan'
 		));
-
-		// Add data rows
 		foreach ($history as $row) {
 			fputcsv($output, array(
 				$row['tanggal'],
@@ -124,8 +168,6 @@ class Transaksi extends CI_Controller {
 				$row['keterangan']
 			));
 		}
-
-		// Close the file pointer
 		fclose($output);
 		exit;
 	}
@@ -262,6 +304,16 @@ class Transaksi extends CI_Controller {
 			{
 				$this->db->insert_batch('tbl_pinjam',$data);
 
+				// Kurangi stok buku
+				foreach($data as $item){
+					$buku = $this->db->get_where('tbl_buku', ['buku_id' => $item['buku_id']])->row();
+					if($buku && $buku->jml > 0){
+						$this->db->set('jml', 'jml - 1', FALSE);
+						$this->db->where('id_buku', $buku->id_buku);
+						$this->db->update('tbl_buku');
+					}
+				}
+
 				// Catat ke history
 				foreach($data as $item){
 					// Ambil id_buku dari tbl_buku berdasarkan buku_id
@@ -306,10 +358,15 @@ class Transaksi extends CI_Controller {
 			$id = $this->input->get('kembali');
 			$pinjam = $this->db->query("SELECT  * FROM tbl_pinjam WHERE pinjam_id = '$id'");
 
+			// Inisialisasi variabel agar tidak undefined
+			$harga_denda = 0;
+			$lama_waktu = 0;
+
 			foreach($pinjam->result_array() as $isi){
 				$pinjam_id = $isi['pinjam_id'];
 				$denda = $this->db->query("SELECT * FROM tbl_denda WHERE pinjam_id = '$pinjam_id'");
-				$jml = $this->db->query("SELECT * FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->num_rows();			
+				$jml = $this->db->query("SELECT * FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->num_rows();	
+				$jml = 1;
 				if($denda->num_rows() > 0){
 					$s = $denda->row();
 					echo $s->denda;
@@ -370,6 +427,17 @@ class Transaksi extends CI_Controller {
 				'tgl_denda'=> date('Y-m-d'),
 			);
 			$this->db->insert('tbl_denda',$data_denda);
+
+			// Tambah stok buku yang dikembalikan
+			$pinjam_items = $this->db->get_where('tbl_pinjam', ['pinjam_id' => $this->input->get('kembali')])->result();
+			foreach($pinjam_items as $item) {
+				$buku = $this->db->get_where('tbl_buku', ['buku_id' => $item->buku_id])->row();
+				if($buku) {
+					$this->db->set('jml', 'jml + 1', FALSE);
+					$this->db->where('id_buku', $buku->id_buku);
+					$this->db->update('tbl_buku');
+				}
+			}
 
 			$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
 			<p> Pengembalian Pinjam Buku Sukses !</p>
@@ -516,7 +584,7 @@ class Transaksi extends CI_Controller {
 				'id'      => $id,
 				'qty'     => 1,
                 'price'   => '1000',
-				'name'    => $tes->title,
+				'name'    => $tes->judul_buku,
 				'options' => array('isbn' => $tes->isbn,'thn' => $tes->thn_buku,'penerbit' => $tes->penerbit)
 			);
 			if(!$this->session->has_userdata('cart')) {
@@ -546,7 +614,7 @@ class Transaksi extends CI_Controller {
 			<thead>
 				<tr>
 					<th>No</th>
-					<th>Title</th>
+					<th>Judul buku</th>
 					<th>Penerbit</th>
 					<th>Tahun</th>
 					<th>Aksi</th>
@@ -614,6 +682,21 @@ class Transaksi extends CI_Controller {
             }
         }
         return -1;
+    }
+
+	public function print_full_history_view()
+	{
+		$tanggal_awal = $this->input->get('tanggal_awal');
+		$tanggal_akhir = $this->input->get('tanggal_akhir');
+		if ($tanggal_awal && $tanggal_akhir) {
+			$data['history'] = $this->get_history_data($tanggal_awal, $tanggal_akhir);
+			$data['periode'] = 'Periode: '.date('d-m-Y', strtotime($tanggal_awal)).' s/d '.date('d-m-Y', strtotime($tanggal_akhir));
+		} else {
+			$data['history'] = $this->get_history_data();
+			$data['periode'] = '';
+		}
+		$data['title_web'] = 'Cetak History Transaksi';
+		$this->load->view('transaksi/print_full_history_view', $data);
     }
 
 }

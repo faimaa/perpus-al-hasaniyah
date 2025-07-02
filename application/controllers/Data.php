@@ -53,9 +53,11 @@ class Data extends CI_Controller {
 			$this->data['buku'] = $this->M_Admin->get_tableid_edit('tbl_buku','id_buku',$this->uri->segment('3'));
 			$this->data['kats'] =  $this->db->query("SELECT * FROM tbl_kategori ORDER BY id_kategori DESC")->result_array();
 			$this->data['rakbuku'] =  $this->db->query("SELECT * FROM tbl_rak ORDER BY id_rak DESC")->result_array();
-
+			// Ambil data buku rusak untuk buku ini
+			$this->data['buku_rusak'] = $this->db->query("SELECT br.*, l.nama as nama_petugas FROM tbl_buku_rusak br LEFT JOIN tbl_login l ON br.petugas_id = l.id_login WHERE br.buku_id = '".$this->uri->segment('3')."' ORDER BY br.tanggal DESC")->result_array();
 		}else{
-			echo '<script>alert("BUKU TIDAK DITEMUKAN");window.location="'.base_url('data').'"</script>';
+			redirect(base_url('data/bukurusak'));
+			return;
 		}
 
 		$this->data['title_web'] = 'Data Buku Detail';
@@ -68,7 +70,7 @@ class Data extends CI_Controller {
 	public function perbaikan_buku($id)
 	{
 		// Cek level user
-		if($this->session->userdata('level') !== 'Petugas') {
+		if($this->session->userdata('level') !== 'Admin') {
 			$this->session->set_flashdata('pesan', '<div class="alert alert-danger">Anda tidak memiliki hak akses!</div>');
 			redirect('data/bukurusak');
 			return;
@@ -94,6 +96,10 @@ class Data extends CI_Controller {
 			// Hapus data buku rusak
 			$this->db->where('id', $id);
 			$this->db->delete('tbl_buku_rusak');
+
+			// Hapus history terkait buku ini
+			$this->db->where('buku_id', $buku_rusak->buku_id);
+			$this->db->delete('tbl_history');
 
 			// Catat ke history
 			$this->db->insert('tbl_history', array(
@@ -162,7 +168,7 @@ class Data extends CI_Controller {
 	{
 		$this->data['idbo'] = $this->session->userdata('ses_id');
 		$this->data['buku'] = $this->db->query("
-			SELECT b.id_buku, b.buku_id, b.sampul, b.isbn, b.title, b.status,
+			SELECT b.id_buku, b.buku_id, b.sampul, b.isbn, b.judul_buku, b.status,
 				br.id, br.jumlah as jumlah_rusak, br.keterangan, br.tanggal as tgl_rusak,
 				l.nama as nama_petugas
 			FROM tbl_buku_rusak br
@@ -181,7 +187,7 @@ class Data extends CI_Controller {
 	public function inputbukurusak()
 	{
 		$this->data['idbo'] = $this->session->userdata('ses_id');
-		$this->data['buku'] = $this->db->query("SELECT * FROM tbl_buku ORDER BY title ASC")->result_array();
+		$this->data['buku'] = $this->db->query("SELECT * FROM tbl_buku ORDER BY judul_buku ASC")->result_array();
         $this->data['title_web'] = 'Input Buku Rusak';
         $this->load->view('header_view',$this->data);
         $this->load->view('sidebar_view',$this->data);
@@ -191,8 +197,8 @@ class Data extends CI_Controller {
 
 	public function prosesbukurusak()
 	{
-		// Cek apakah user adalah petugas
-		if($this->session->userdata('level') !== 'Petugas') {
+		// Cek apakah user adalah petugas atau admin
+		if(!in_array($this->session->userdata('level'), ['Petugas', 'Admin'])) {
 			$this->session->set_flashdata('pesan', '<div class="alert alert-danger" role="alert">Anda tidak memiliki hak akses!</div>');
 			redirect(base_url('data/bukurusak'));
 			return;
@@ -246,6 +252,10 @@ class Data extends CI_Controller {
 			);
 			$this->db->insert('tbl_buku_rusak', $data);
 
+			// Hapus history terkait buku ini
+			$this->db->where('buku_id', $buku_id);
+			$this->db->delete('tbl_history');
+
 			// Catat ke history
 			$this->db->insert('tbl_history', array(
 				'tipe_transaksi' => 'Buku Rusak',
@@ -286,18 +296,15 @@ class Data extends CI_Controller {
         
 			$buku = $this->M_Admin->get_tableid_edit('tbl_buku','id_buku',htmlentities($this->input->get('buku_id')));
 			
-			$sampul = './assets/image/buku/'.$buku->sampul;
+			$sampul = './assets_style/image/buku/'.$buku->sampul;
 			if(file_exists($sampul))
 			{
 				unlink($sampul);
 			}
-			
-			$lampiran = './assets/image/buku/'.$buku->lampiran;
-			if(file_exists($lampiran))
-			{
-				unlink($lampiran);
-			}
-			
+			// Hapus history terkait buku ini sebelum hapus buku
+			$this->db->where('buku_id', $buku->id_buku);
+			$this->db->delete('tbl_history');
+
 			$this->M_Admin->delete_table('tbl_buku','id_buku',$this->input->get('buku_id'));
 			
 			$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-warning">
@@ -310,13 +317,36 @@ class Data extends CI_Controller {
 		if(!empty($this->input->post('tambah')))
 		{
 			$post= $this->input->post();
+			// Validasi field wajib
+			$required = [
+				'kategori' => 'Kategori',
+				'rak' => 'Rak',
+				'isbn' => 'ISBN',
+				'judul_buku' => 'Judul Buku',
+				'pengarang' => 'Pengarang',
+				'penerbit' => 'Penerbit',
+				'thn' => 'Tahun',
+				'jml' => 'Jumlah',
+			];
+			$empty_fields = [];
+			foreach($required as $key => $label) {
+				if(empty($post[$key])) {
+					$empty_fields[] = $label;
+				}
+			}
+			if(count($empty_fields) > 0) {
+				$msg = '<div id="notifikasi"><div class="alert alert-danger"><p>Isi kolom pada daftar: <b>'.implode(', ', $empty_fields).'</b>!</p></div></div>';
+				$this->session->set_flashdata('pesan', $msg);
+				redirect(base_url('data/bukutambah'));
+				return;
+			}
 			$buku_id = $this->M_Admin->buat_kode('tbl_buku','BK','id_buku','ORDER BY id_buku DESC LIMIT 1'); 
 			$data = array(
 				'buku_id'=>$buku_id,
 				'id_kategori'=>htmlentities($post['kategori']), 
 				'id_rak' => htmlentities($post['rak']), 
 				'isbn' => htmlentities($post['isbn']), 
-				'title'  => htmlentities($post['title']), 
+				'judul_buku'  => htmlentities($post['judul_buku']), 
 				'pengarang'=> htmlentities($post['pengarang']), 
 				'penerbit'=> htmlentities($post['penerbit']),    
 				'thn_buku' => htmlentities($post['thn']), 
@@ -388,7 +418,7 @@ class Data extends CI_Controller {
 				'id_kategori'=>htmlentities($post['kategori']), 
 				'id_rak' => htmlentities($post['rak']), 
 				'isbn' => htmlentities($post['isbn']), 
-				'title'  => htmlentities($post['title']),
+				'judul_buku'  => htmlentities($post['judul_buku']),
 				'pengarang'=> htmlentities($post['pengarang']), 
 				'penerbit'=> htmlentities($post['penerbit']),  
 				'thn_buku' => htmlentities($post['thn']), 
@@ -409,7 +439,7 @@ class Data extends CI_Controller {
 
 				if ($this->upload->do_upload('gambar')) {
 					$this->upload->data();
-					$gambar = './assets/image/buku/'.htmlentities($post['gmbr']);
+					$gambar = './assets_style/image/buku/'.htmlentities($post['gmbr']);
 					if(file_exists($gambar)) {
 						unlink($gambar);
 					}
@@ -532,6 +562,12 @@ class Data extends CI_Controller {
 
 	public function rak()
 	{
+		// Batasi akses untuk petugas
+		if($this->session->userdata('level') == 'Petugas'){
+			$this->session->set_flashdata('pesan', '<div class="alert alert-danger" role="alert">Petugas tidak diizinkan mengakses menu rak!</div>');
+			redirect(base_url('dashboard'));
+			return;
+		}
 		
         $this->data['idbo'] = $this->session->userdata('ses_id');
 		$this->data['rakbuku'] =  $this->db->query("SELECT * FROM tbl_rak ORDER BY id_rak DESC");
@@ -598,5 +634,18 @@ class Data extends CI_Controller {
 			</div></div>');
 			redirect(base_url('data/rak')); 
 		}
+	}
+
+	public function detailbukurusak($id)
+	{
+		$this->data['idbo'] = $this->session->userdata('ses_id');
+		// Ambil data buku rusak
+		$rusak = $this->db->query("SELECT br.*, b.judul_buku, b.isbn, b.sampul, b.penerbit, b.pengarang, b.thn_buku, l.nama as nama_petugas FROM tbl_buku_rusak br LEFT JOIN tbl_buku b ON br.buku_id = b.id_buku LEFT JOIN tbl_login l ON br.petugas_id = l.id_login WHERE br.id = ?", array($id))->row();
+		$this->data['rusak'] = $rusak;
+		$this->data['title_web'] = 'Detail Buku Rusak';
+		$this->load->view('header_view',$this->data);
+		$this->load->view('sidebar_view',$this->data);
+		$this->load->view('buku/detail_bukurusak',$this->data);
+		$this->load->view('footer_view',$this->data);
 	}
 }
