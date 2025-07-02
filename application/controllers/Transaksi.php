@@ -178,14 +178,30 @@ class Transaksi extends CI_Controller {
 		$this->data['idbo'] = $this->session->userdata('ses_id');
 
 		if($this->session->userdata('level') == 'Anggota'){
-			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `pinjam_id`, `anggota_id`, 
-				`status`, `tgl_pinjam`, `lama_pinjam`, `tgl_balik`, `tgl_kembali` 
-				FROM tbl_pinjam WHERE anggota_id = ? AND status = 'Di Kembalikan' 
-				ORDER BY id_pinjam DESC",array($this->session->userdata('anggota_id')));
+			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, p.anggota_id, 
+				p.status, p.tgl_pinjam, p.lama_pinjam, p.tgl_balik, p.tgl_kembali 
+				FROM tbl_pinjam p 
+				WHERE p.anggota_id = ? AND p.status = 'Di Kembalikan' 
+				ORDER BY p.id_pinjam DESC", array($this->session->userdata('anggota_id')));
+
+			$this->data['items'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, p.buku_id, 
+				b.buku_id, b.judul_buku, b.penerbit, b.thn_buku 
+				FROM tbl_pinjam p 
+				INNER JOIN tbl_buku b ON b.buku_id = p.buku_id 
+				WHERE p.anggota_id = ? AND p.status = 'Di Kembalikan'", 
+				array($this->session->userdata('anggota_id')));
 		}else{
-			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `pinjam_id`, `anggota_id`, 
-				`status`, `tgl_pinjam`, `lama_pinjam`, `tgl_balik`, `tgl_kembali` 
-				FROM tbl_pinjam WHERE status = 'Di Kembalikan' ORDER BY id_pinjam DESC");
+			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, p.anggota_id, 
+				p.status, p.tgl_pinjam, p.lama_pinjam, p.tgl_balik, p.tgl_kembali 
+				FROM tbl_pinjam p 
+				WHERE p.status = 'Di Kembalikan' 
+				ORDER BY p.id_pinjam DESC");
+
+			$this->data['items'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, p.buku_id, 
+				b.buku_id, b.judul_buku, b.penerbit, b.thn_buku 
+				FROM tbl_pinjam p 
+				INNER JOIN tbl_buku b ON b.buku_id = p.buku_id 
+				WHERE p.status = 'Di Kembalikan'");
 		}
 		
 		$this->load->view('header_view',$this->data);
@@ -219,18 +235,11 @@ class Transaksi extends CI_Controller {
 		$count = $this->M_Admin->CountTableId('tbl_pinjam', 'id_pinjam', $id);
 		if($count > 0)
 		{
-			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, 
-				p.anggota_id, p.status, p.tgl_pinjam, p.lama_pinjam, 
-				p.tgl_balik, p.tgl_kembali 
-				FROM tbl_pinjam p 
-				WHERE p.id_pinjam = '$id' 
-				LIMIT 1")->row();
+			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `id_pinjam`,`pinjam_id`, `anggota_id`, 
+				`status`, `tgl_pinjam`, `lama_pinjam`, `tgl_balik`, `tgl_kembali` 
+				FROM tbl_pinjam WHERE id_pinjam = '$id'")->row();
 
-			$this->data['items'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, p.buku_id, 
-				b.buku_id, b.judul_buku, b.penerbit, b.thn_buku 
-				FROM tbl_pinjam p 
-				INNER JOIN tbl_buku b ON b.buku_id = p.buku_id 
-				WHERE p.id_pinjam = '$id'")->result();
+			$this->data['items'] = $this->db->query("SELECT * FROM tbl_pinjam WHERE id_pinjam = '$id'")->result_array();
 
 			$this->data['anggota'] = $this->db->query("SELECT * FROM tbl_login WHERE anggota_id = '". $this->data['pinjam']->anggota_id ."'")->row();
 
@@ -362,96 +371,77 @@ class Transaksi extends CI_Controller {
 		if($this->input->get('kembali'))
 		{
 			$id = $this->input->get('kembali');
-			$pinjam = $this->db->query("SELECT  * FROM tbl_pinjam WHERE pinjam_id = '$id'");
+			$buku_id = $this->input->get('buku_id');
 
-			// Inisialisasi variabel agar tidak undefined
-			$harga_denda = 0;
-			$lama_waktu = 0;
+			// Ambil data pinjam untuk buku spesifik yang belum dikembalikan
+			$pinjam = $this->db->query("SELECT * FROM tbl_pinjam 
+				WHERE pinjam_id = '$id' 
+				AND buku_id = '$buku_id' 
+				AND (status IS NULL OR status != 'Di Kembalikan')")->row();
 
-			foreach($pinjam->result_array() as $isi){
-				$pinjam_id = $isi['pinjam_id'];
-				$denda = $this->db->query("SELECT * FROM tbl_denda WHERE pinjam_id = '$pinjam_id'");
-				// Hitung jumlah buku yang dipinjam
-				$jml = $this->db->query("SELECT COUNT(DISTINCT buku_id) as total FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->row()->total;
-
-				if($denda->num_rows() > 0){
-					$s = $denda->row();
-					echo $s->denda;
-				}else{
-					$date1 = date('Ymd');
-					$date2 = preg_replace('/[^0-9]/','',$isi['tgl_balik']);
-					$diff = $date2 - $date1;
-					if($diff >= 0 )
-					{
-						$harga_denda = 0;
-						$lama_waktu = 0;
-					}else{
-						$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif'); 
-						// Hitung denda: harga denda per hari × jumlah hari × jumlah buku
-						$harga_denda = $dd->harga_denda * abs($diff) * $jml;
-						$lama_waktu = abs($diff);
-					}
-				}
-				
-			}
-
-			$data = array(
-				'status' => 'Di Kembalikan', 
-				'tgl_kembali'  => date('Y-m-d'),
-			);
-
-			$total_array = count($data);
-			// update status peminjaman
-			$this->db->where('pinjam_id', $this->input->get('kembali'));
-			$this->db->update('tbl_pinjam', array(
-				'status' => 'Di Kembalikan',
-				'tgl_kembali' => date('Y-m-d')
-			));
-
-			// Ambil data pinjam untuk mendapatkan buku_id dan anggota_id
-			$pinjam = $this->db->get_where('tbl_pinjam', ['pinjam_id' => $this->input->get('kembali')])->row();
 			if($pinjam) {
-				// Ambil id_buku dari tbl_buku
-				$buku = $this->db->get_where('tbl_buku', ['buku_id' => $pinjam->buku_id])->row();
-				// Ambil id_login dari tbl_login
+				// Hitung denda untuk buku ini
+				$date1 = date('Ymd');
+				$date2 = preg_replace('/[^0-9]/','',$pinjam->tgl_balik);
+				$diff = $date2 - $date1;
+
+				$harga_denda = 0;
+				$lama_waktu = 0;
+
+				if($diff < 0) {
+					$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif'); 
+					$harga_denda = $dd->harga_denda * abs($diff); // Denda per buku
+					$lama_waktu = abs($diff);
+				}
+
+				// Update status buku ini saja
+				$this->db->where('pinjam_id', $id);
+				$this->db->where('buku_id', $buku_id);
+				$this->db->update('tbl_pinjam', array(
+					'status' => 'Di Kembalikan',
+					'tgl_kembali' => date('Y-m-d')
+				));
+
+				// Ambil data buku dan anggota
+				$buku = $this->db->get_where('tbl_buku', ['buku_id' => $buku_id])->row();
 				$anggota = $this->db->get_where('tbl_login', ['anggota_id' => $pinjam->anggota_id])->row();
+
 				if($buku && $anggota) {
 					// Catat ke history
 					$this->db->insert('tbl_history', array(
 						'tipe_transaksi' => 'Pengembalian',
-						'kode_transaksi' => $this->input->get('kembali'),
+						'kode_transaksi' => $id,
 						'buku_id' => $buku->id_buku,
 						'anggota_id' => $anggota->id_login,
 						'petugas_id' => $this->session->userdata('ses_id'),
-						'keterangan' => 'Pengembalian buku'
+						'keterangan' => 'Pengembalian buku ' . $buku->judul_buku
 					));
 				}
-			}
 
-			$data_denda = array(
-				'pinjam_id' => $this->input->get('kembali'), 
-				'denda' => $harga_denda, 
-				'lama_waktu'=>$lama_waktu, 
-				'tgl_denda'=> date('Y-m-d'),
-			);
-			$this->db->insert('tbl_denda',$data_denda);
+				// Catat denda jika ada
+				if($harga_denda > 0) {
+					$data_denda = array(
+						'pinjam_id' => $id,
+						'denda' => $harga_denda,
+						'lama_waktu' => $lama_waktu,
+						'tgl_denda' => date('Y-m-d'),
+					);
+					$this->db->insert('tbl_denda', $data_denda);
+				}
 
-			// Tambah stok buku yang dikembalikan
-			$pinjam_items = $this->db->get_where('tbl_pinjam', ['pinjam_id' => $this->input->get('kembali')])->result();
-			foreach($pinjam_items as $item) {
-				$buku = $this->db->get_where('tbl_buku', ['buku_id' => $item->buku_id])->row();
+				// Tambah stok buku yang dikembalikan
+				$buku = $this->db->get_where('tbl_buku', ['buku_id' => $buku_id])->row();
 				if($buku) {
 					$this->db->set('jml', 'jml + 1', FALSE);
 					$this->db->where('id_buku', $buku->id_buku);
 					$this->db->update('tbl_buku');
 				}
+
+				$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+				<p> Pengembalian Buku '. $buku->judul_buku .' Sukses!</p>
+				</div></div>');
+				redirect(base_url('transaksi/kembalipinjam/'.$pinjam->id_pinjam));
 			}
-
-			$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
-			<p> Pengembalian Pinjam Buku Sukses !</p>
-			</div></div>');
-			redirect(base_url('transaksi')); 
-
 		}
 	}
 
