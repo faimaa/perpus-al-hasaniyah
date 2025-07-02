@@ -15,7 +15,7 @@
 	    <div class="col-md-12">
 	        <div class="box box-danger box-solid">
                 <div class="box-header with-border">
-                    <?php if($this->session->userdata('level') == 'Petugas'){?>
+                    <?php if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){?>
                     <a href="<?php echo base_url('data/inputbukurusak');?>"><button class="btn btn-danger">
                         <i class="fa fa-plus"> </i> Input Buku Rusak</button></a>
                     <?php }?>
@@ -61,7 +61,7 @@
                                     </center>
                                 </td>
                                 <td>
-                                    <strong><?= $isi['title'];?></strong><br/>
+                                    <strong><?= $isi['judul_buku'];?></strong><br/>
                                     <small class="text-muted">ISBN: <?= $isi['isbn'];?></small>
                                 </td>
                                 <td>
@@ -71,11 +71,9 @@
                                 <td><?= $isi['tgl_rusak'] ? date('d/m/Y H:i', strtotime($isi['tgl_rusak'])) : '-';?></td>
                                 <td><?= $isi['nama_petugas'] ? $isi['nama_petugas'] : '-';?></td>
                                 <td style="width:25%;">
-								<?php if($this->session->userdata('level') == 'Petugas'){?>
-								<a href="<?= base_url('data/bukudetail/'.$isi['buku_id']);?>" class="btn btn-primary btn-sm">
-									<i class="fa fa-sign-in"></i> Detail
-								</a>
-                                <a href="javascript:void(0)" onclick="konfirmasiPerbaikan(<?= $isi['id'] ?>, '<?= $isi['title'] ?>')" class="btn btn-success btn-sm">
+								<?php if($this->session->userdata('level') == 'Admin'){?>
+								<a href="<?= base_url('data/detailbukurusak/'.$isi['id']);?>" class="btn btn-info btn-sm"><i class="fa fa-info-circle"></i> Detail Rusak</a>
+                                <a href="javascript:void(0)" onclick="konfirmasiPerbaikan(<?= $isi['id'] ?>, '<?= $isi['judul_buku'] ?>')" class="btn btn-success btn-sm">
                                     <i class="fa fa-wrench"></i> Perbaiki
                                 </a>
 								<?php }?>
@@ -94,10 +92,10 @@
 </div>
 
 <script>
-function konfirmasiPerbaikan(id, title) {
+function konfirmasiPerbaikan(id, judul_buku) {
     Swal.fire({
-        title: 'Konfirmasi Perbaikan',
-        text: 'Apakah buku "' + title + '" sudah selesai diperbaiki?',
+        judul_buku: 'Konfirmasi Perbaikan',
+        text: 'Apakah buku "' + judul_buku + '" sudah selesai diperbaiki?',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#28a745',
@@ -114,7 +112,7 @@ function konfirmasiPerbaikan(id, title) {
 <?php if($this->session->flashdata('pesan')) { ?>
     Swal.fire({
         icon: '<?= strpos($this->session->flashdata("pesan"), "success") !== false ? "success" : "error" ?>',
-        title: '<?= strpos($this->session->flashdata("pesan"), "success") !== false ? "Berhasil!" : "Gagal!" ?>',
+        judul_buku: '<?= strpos($this->session->flashdata("pesan"), "success") !== false ? "Berhasil!" : "Gagal!" ?>',
         html: '<?= $this->session->flashdata("pesan") ?>',
         timer: 3000,
         showConfirmButton: false

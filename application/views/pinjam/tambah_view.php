@@ -123,7 +123,7 @@
 			<tr>
 				<th>No</th>
 				<th>ISBN</th>
-				<th>Title</th>
+				<th>Judul Buku</th>
 				<th>Penerbit</th>
 				<th>Tahun Buku</th>
 				<th>Stok Buku</th>
@@ -136,7 +136,7 @@
 			<tr>
 				<td><?= $no;?></td>
 				<td><?= $isi['isbn'];?></td>
-				<td><?= $isi['title'];?></td>
+				<td><?= $isi['judul_buku'];?></td>
 				<td><?= $isi['penerbit'];?></td>
 				<td><?= $isi['thn_buku'];?></td>
 				<td><?= $isi['jml'];?></td>

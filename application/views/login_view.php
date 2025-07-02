@@ -43,15 +43,15 @@
     </style>
   </head>
 <body class="hold-transition login-page" style="overflow-y: hidden;background:url(
-	'<?php echo base_url('assets_style/image/Buku-2.jpg');?>')no-repeat;background-size:100%;">
+	'<?php echo base_url('assets_style/image/1.webp');?>')no-repeat;background-size:100%;">
 <div class="login-box">
 	<br/>
   <div class="login-logo">
-    <a href="index.php" style="color: yellow;">Sistem Informasi <br/><b>Perpustakaan</b></a>
+    <a href="index.php" style="color: yellow;">Perpustakaan <br/><b>AL-HASANIYAH</b></a>
   </div>
   <div id="tampilalert"></div>
   <!-- /.login-logo -->
-  <div class="login-box-body" style="border:2px solid #226bbf;">
+  <div class="login-box-body" style="border:2px solid #226bbf; background:rgba(255,255,255,0.5); box-shadow:0 4px 24px rgba(0,0,0,0.08);">
     <p class="login-box-msg" style="font-size:16px;"></p>
     <form action="<?= base_url('login/auth');?>" method="POST">
       <div class="form-group has-feedback">
@@ -84,7 +84,7 @@
   <br/>
   <footer>
     <div class="login-box-body text-center bg-blue">
-       <a style="color: yellow;"> Copyright &copy; Sistem Perpustakaan Codekop - <?php echo date("Y");?>
+       <a style="color: yellow;"> Copyright &copy; Perpustakaan Al-Hasaniyah - <?php echo date("Y");?>
     </div>
   </footer>
 </div>

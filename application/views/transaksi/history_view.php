@@ -2,11 +2,11 @@
 <div class="content-wrapper">
     <section class="content-header">
         <h1>
-            <i class="fa fa-history"></i> History Transaksi
+            <i class="fa fa-history"></i> Laporan Transaksi
         </h1>
         <ol class="breadcrumb">
             <li><a href="<?php echo base_url('dashboard'); ?>"><i class="fa fa-dashboard"></i>&nbsp; Dashboard</a></li>
-            <li class="active"><i class="fa fa-history"></i>&nbsp; History Transaksi</li>
+            <li class="active"><i class="fa fa-history"></i>&nbsp; Laporan Transaksi</li>
         </ol>
     </section>
     <section class="content">
@@ -17,16 +17,29 @@
                     <div class="box-header with-border">
                         <div class="row">
                             <div class="col-md-6">
-                                <h4>History Transaksi</h4>
+                                <h4>Laporan Transaksi</h4>
                             </div>
                             <div class="col-md-6 text-right">
                                 <a href="<?php echo base_url('transaksi/download_history');?>" class="btn btn-success">
                                     <i class="fa fa-download"></i> Download CSV
                                 </a>
+                                <a href="<?php echo base_url('transaksi/print_full_history_view?tanggal_awal=' . (isset($_GET['tanggal_awal']) ? $_GET['tanggal_awal'] : '') . '&tanggal_akhir=' . (isset($_GET['tanggal_akhir']) ? $_GET['tanggal_akhir'] : '')); ?>" class="btn btn-info" target="_blank">
+                                    <i class="fa fa-print"></i> Cetak History Per Periode
+                                </a>
                             </div>
                         </div>
                     </div>
                     <div class="box-body">
+                        <form class="form-inline" method="get" action="<?php echo base_url('transaksi/history'); ?>">
+                            <div class="form-group">
+                                <label for="tanggal_awal">Periode: </label>
+                                <input type="date" class="form-control" id="tanggal_awal" name="tanggal_awal" value="<?php echo isset($_GET['tanggal_awal']) ? $_GET['tanggal_awal'] : ''; ?>">
+                                <span> s/d </span>
+                                <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir" value="<?php echo isset($_GET['tanggal_akhir']) ? $_GET['tanggal_akhir'] : ''; ?>">
+                            </div>
+                            <button type="submit" class="btn btn-primary" name="filter" value="1"><i class="fa fa-filter"></i> Filter</button>
+                            <a href="<?php echo base_url('transaksi/history'); ?>" class="btn btn-default">Reset</a>
+                        </form>
                         <div class="table-responsive">
                             <table id="example1" class="table table-bordered table-striped table-hover">
                                 <thead>

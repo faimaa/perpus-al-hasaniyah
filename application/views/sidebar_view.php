@@ -30,12 +30,17 @@
         <br/>
 		</div>
         <ul class="sidebar-menu" data-widget="tree">
-			<?php if($this->session->userdata('level') == 'Petugas'){?>
+			<?php if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){?>
             <!-- sidebar menu: : style can be found in sidebar.less -->
             <li class="header">MAIN NAVIGATION</li>
             <li class="<?php if($this->uri->uri_string() == 'dashboard'){ echo 'active';}?>">
                 <a href="<?php echo base_url('dashboard');?>">
                     <i class="fa fa-dashboard"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="<?php if($this->uri->uri_string() == 'user/edit/'.$this->session->userdata('ses_id')){ echo 'active';}?>">
+                <a href="<?php echo base_url('user/edit/'.$this->session->userdata('ses_id'));?>" class="cursor">
+                    <i class="fa fa-user"></i> <span>Profil</span>
                 </a>
             </li>
             <li class="<?php if($this->uri->uri_string() == 'user'){ echo 'active';}?>
@@ -75,16 +80,18 @@
                         </a>
                     </li>
                     <li class=" <?php if($this->uri->uri_string() == 'data/kategori'){ echo 'active';}?>">
+                        <?php if($this->session->userdata('level') != 'Petugas'){ ?>
                         <a href="<?php echo base_url("data/kategori");?>" class="cursor">
                             <span class="fa fa-tags"></span> Kategori
-                            
                         </a>
+                        <?php } ?>
                     </li>
                     <li class=" <?php if($this->uri->uri_string() == 'data/rak'){ echo 'active';}?>">
+                        <?php if($this->session->userdata('level') != 'Petugas'){ ?>
                         <a href="<?php echo base_url("data/rak");?>" class="cursor">
                             <span class="fa fa-list"></span> Rak
-                            
                         </a>
+                        <?php } ?>
                     </li>
                 </ul>
             </li>
@@ -120,11 +127,13 @@
                             <span class="fa fa-download"></span> Pengembalian
                         </a>
                     </li>
+                    <?php if($this->session->userdata('level') == 'Admin'){ ?>
                     <li class="<?php if($this->uri->uri_string() == 'transaksi/history'){ echo 'active';} ?>">
-                        <a href="<?php echo base_url("transaksi/history");?>" class="cursor">
-                            <span class="fa fa-history"></span> History Transaksi
+                        <a href="<?php echo base_url('transaksi/history'); ?>" class="cursor">
+                            <span class="fa fa-file"></span> Laporan Transaksi
                         </a>
                     </li>
+                    <?php } ?>
                 </ul>
             </li>
             <li class="<?php if($this->uri->uri_string() == 'transaksi/denda'){ echo 'active';}?>">
@@ -135,6 +144,11 @@
             </li>
 			<?php }?>
 			<?php if($this->session->userdata('level') == 'Anggota'){?>
+				<li class="<?php if($this->uri->uri_string() == 'user/edit/'.$this->uri->segment('3')){ echo 'active';}?>">
+					<a href="<?php echo base_url('user/edit/'.$this->session->userdata('ses_id'));?>" class="cursor">
+						<i class="fa fa-user"></i>  <span>Profil</span>
+					</a>
+				</li>
 				<li class="<?php if($this->uri->uri_string() == 'transaksi'){ echo 'active';}?>">
 					<a href="<?php echo base_url("transaksi");?>" class="cursor">
 						<i class="fa fa-upload"></i> <span>Data Peminjaman </span>
@@ -145,15 +159,9 @@
 						<i class="fa fa-upload"></i> <span>Data Pengambilan</span>
 					</a>
 				</li>
-				<li class="<?php if($this->uri->uri_string() == 'data'){ echo 'active';}?>
-				<?php if($this->uri->uri_string() == 'data/bukudetail/'.$this->uri->segment('3')){ echo 'active';}?>">
+				<li class="<?php if($this->uri->uri_string() == 'data'){ echo 'active';}?><?php if($this->uri->uri_string() == 'data/bukudetail/'.$this->uri->segment('3')){ echo 'active';}?>">
 					<a href="<?php echo base_url("data");?>" class="cursor">
 						<i class="fa fa-search"></i>  <span>Cari Buku</span>
-					</a>
-				</li>
-				<li class="<?php if($this->uri->uri_string() == 'user/edit/'.$this->uri->segment('3')){ echo 'active';}?>">
-					<a href="<?php echo base_url('user/edit/'.$this->session->userdata('ses_id'));?>" class="cursor">
-						<i class="fa fa-user"></i>  <span>Data Anggota</span>
 					</a>
 				</li>
 				<li class="">

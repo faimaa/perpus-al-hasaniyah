@@ -21,7 +21,7 @@
 	    <div class="col-md-12">
 	        <div class="box box-primary">
                 <div class="box-header with-border">
-					<h4><?= $buku->title;?></h4>
+					<h4><?= $buku->judul_buku;?></h4>
                 </div>
 			    <!-- /.box-header -->
 			    <div class="box-body">
@@ -41,7 +41,7 @@
 						</tr>
 						<tr>
 							<td>Judul Buku</td>
-							<td><?= $buku->title;?></td>
+							<td><?= $buku->judul_buku;?></td>
 						</tr>
 						<tr>
 							<td>Kategori</td>
@@ -89,19 +89,11 @@
 							<td><?= $rak->nama_rak;?></td>
 						</tr>
 						<tr>
-							<td>Lampiran</td>
-							<td><?php if(!empty($buku->lampiran !== "0")){?>
-									<a href="<?= base_url('assets_style/image/buku/'.$buku->lampiran);?>" class="btn btn-primary btn-md" target="_blank">
-										<i class="fa fa-download"></i> Sample Buku
-									</a>
-								<?php  }else{ echo '<br/><p style="color:red">* Tidak ada Lampiran</p>';}?>
-                               </td>
-						</tr>
-						<tr>
 							<td>Tanggal Masuk</td>
 							<td><?= $buku->tgl_masuk;?></td>
 						</tr>
 					</table>
+					<a href="<?= base_url('data/buku'); ?>" class="btn btn-danger btn-md" style="margin-top:15px;"><i class="fa fa-arrow-left"></i> Kembali </a>
 		        </div>
 	        </div>
 	    </div>

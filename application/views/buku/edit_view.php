@@ -44,11 +44,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Judul Buku</label>
-                                    <input type="text" class="form-control" value="<?= $buku->title;?>" name="title" placeholder="Contoh : Cara Cepat Belajar Pemrograman Web">
-                                </div>
-                                <div class="form-group">
-                                    <label>Jumlah Buku</label>
-                                    <input type="number" class="form-control" value="<?= $buku->jml;?>" name="jml" placeholder="Contoh : 12" required="required">
+                                    <input type="text" class="form-control" value="<?= $buku->judul_buku;?>" name="judul buku" placeholder="Contoh : Cara Cepat Belajar Pemrograman Web">
                                 </div>
                                 <div class="form-group">
                                     <label>Status Buku</label>
@@ -67,7 +63,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Tahun Buku</label>
-                                    <input type="number" class="form-control" value="<?= $buku->thn_buku;?>" name="thn" placeholder="Tahun Buku : 2019">
+                                    <input type="date" class="form-control" value="<?= $buku->thn_buku;?>" name="thn" placeholder="Tahun Buku : 2019">
                                 </div>
 								
                             </div>
@@ -89,16 +85,6 @@
 									<?php }else{ echo '<br/><p style="color:red">* Tidak ada Sampul</p>';}?>
 								</div>
                                 <div class="form-group">
-								<label>Lampiran Buku <small style="color:green">(pdf) * ganti opsional</small></label>
-                                    <input type="file" accept="application/pdf" name="lampiran">
-                                    <br>
-									<?php if(!empty($buku->lampiran !== "0")){?>
-									<a href="<?= base_url('assets_style/image/buku/'.$buku->lampiran);?>" class="btn btn-primary btn-md" target="_blank">
-										<i class="fa fa-download"></i> Sample Buku
-									</a>
-									<?php  }else{ echo '<br/><p style="color:red">* Tidak ada Lampiran</p>';}?>
-                                </div>
-                                <div class="form-group">
                                     <label>Keterangan Lainnya</label>
                                     <textarea class="form-control" name="ket" id="summernotehal" style="height:120px"><?= $buku->isi;?></textarea>
                                 </div>
@@ -106,7 +92,6 @@
                         </div>
                         <div class="pull-right">
 							<input type="hidden" name="gmbr" value="<?= $buku->sampul;?>">
-							<input type="hidden" name="lamp" value="<?= $buku->lampiran;?>">
 							<input type="hidden" name="edit" value="<?= $buku->id_buku;?>">
                             <button type="submit" class="btn btn-primary btn-md">Submit</button> 
                     </form>

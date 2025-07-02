@@ -25,7 +25,7 @@
                   <?php foreach($buku as $buk):?>
                     <?php if($buk['status'] != 'Rusak' && $buk['jml'] > 0):?>
                       <option value="<?= $buk['id_buku'];?>">
-                        <?= $buk['title'];?> (ISBN: <?= $buk['isbn'];?>) - Stok: <?= $buk['jml'];?>
+                        <?= $buk['judul_buku'];?> (ISBN: <?= $buk['isbn'];?>) - Stok: <?= $buk['jml'];?>
                       </option>
                     <?php endif;?>
                   <?php endforeach;?>

@@ -15,7 +15,7 @@
 	    <div class="col-md-12">
 	        <div class="box box-primary">
                 <div class="box-header with-border">
-					<?php if($this->session->userdata('level') == 'Petugas'){?>
+					<?php if($this->session->userdata('level') == 'Admin'){?>
                     <a href="data/bukutambah"><button class="btn btn-primary">
 						<i class="fa fa-plus"> </i> Tambah Buku</button></a>
 					<?php }?>
@@ -30,7 +30,7 @@
                                 <th>No</th>
                                 <th>Sampul</th>
                                 <th>ISBN</th>
-                                <th>Title</th>
+                                <th>Judul Buku</th>
                                 <th>Penerbit</th>
                                 <th>Tahun Buku</th>
                                 <th>Stok Tersedia</th>
@@ -58,7 +58,7 @@
                                     </center>
                                 </td>
                                 <td><?= $isi['isbn'];?></td>
-                                <td><?= $isi['title'];?></td>
+                                <td><?= $isi['judul_buku'];?></td>
                                 <td><?= $isi['penerbit'];?></td>
                                 <td><?= $isi['thn_buku'];?></td>
                                 <td>
@@ -80,17 +80,14 @@
                                     <span class="label label-primary"><?= $total;?></span>
                                 </td>
                                 <td><?= $isi['tgl_masuk'];?></td>
-									<td <?php if($this->session->userdata('level') == 'Petugas'){?>style="width:17%;"<?php }?>>
+									<td <?php if(in_array($this->session->userdata('level'), ['Admin','Petugas','Anggota'])){?>style="width:17%;"<?php }?>>
 								
-									<?php if($this->session->userdata('level') == 'Petugas'){?>
+									<?php if($this->session->userdata('level') == 'Admin'){?>
 									<a href="<?= base_url('data/bukuedit/'.$isi['id_buku']);?>"><button class="btn btn-success"><i class="fa fa-edit"></i></button></a>
-									<a href="<?= base_url('data/bukudetail/'.$isi['id_buku']);?>">
-									<button class="btn btn-primary"><i class="fa fa-sign-in"></i> Detail</button></a>
-                                    <a href="<?= base_url('data/prosesbuku?buku_id='.$isi['id_buku']);?>" onclick="return confirm('Anda yakin Buku ini akan dihapus ?');">
-									<button class="btn btn-danger"><i class="fa fa-trash"></i></button></a>
+									<a href="<?= base_url('data/bukudetail/'.$isi['id_buku']);?>"><button class="btn btn-primary"><i class="fa fa-eye"></i> </button></a>
+                                    <a href="<?= base_url('data/prosesbuku?buku_id='.$isi['id_buku']);?>" onclick="return confirm('Anda yakin Buku ini akan dihapus ?');"><button class="btn btn-danger"><i class="fa fa-trash"></i></button></a>
 									<?php }else{?>
-										<a href="<?= base_url('data/bukudetail/'.$isi['id_buku']);?>">
-										<button class="btn btn-primary"><i class="fa fa-sign-in"></i> Detail</button></a>
+										<a href="<?= base_url('data/bukudetail/'.$isi['id_buku']);?>"><button class="btn btn-primary"><i class="fa fa-eye"></i></button></a>
 									<?php }?>
                                 </td>
                             </tr>
