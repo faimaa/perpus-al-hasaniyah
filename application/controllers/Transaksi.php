@@ -211,70 +211,76 @@ class Transaksi extends CI_Controller {
 		$this->load->view('footer_view',$this->data);
 	}
 
-	public function detailpinjam()
+	public function detailpinjam($id = null)
 	{
-		$this->data['idbo'] = $this->session->userdata('ses_id');		
-		$id = $this->uri->segment('3');
-		if($this->session->userdata('level') == 'Anggota'){
-			$count = $this->db->get_where('tbl_pinjam',[
-				'pinjam_id' => $id, 
-				'anggota_id' => $this->session->userdata('anggota_id')
-			])->num_rows();
-			if($count > 0)
-			{
-				$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `pinjam_id`, 
-				`anggota_id`, `status`, 
-				`tgl_pinjam`, `lama_pinjam`, 
-				`tgl_balik`, `tgl_kembali` 
-				FROM tbl_pinjam WHERE pinjam_id = ? 
-				AND anggota_id =?", 
-				array($id,$this->session->userdata('anggota_id')))->row();
+		$this->data['idbo'] = $this->session->userdata('ses_id');
+		$this->data['title_web'] = 'Detail Peminjaman';
+		$id = $this->uri->segment(3);
+		$count = $this->M_Admin->CountTableId('tbl_pinjam', 'id_pinjam', $id);
+		if($count > 0)
+		{
+			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, 
+				p.anggota_id, p.status, p.tgl_pinjam, p.lama_pinjam, 
+				p.tgl_balik, p.tgl_kembali 
+				FROM tbl_pinjam p 
+				WHERE p.id_pinjam = '$id' 
+				LIMIT 1")->row();
+
+			$this->data['items'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, p.buku_id, 
+				b.buku_id, b.judul_buku, b.penerbit, b.thn_buku 
+				FROM tbl_pinjam p 
+				INNER JOIN tbl_buku b ON b.buku_id = p.buku_id 
+				WHERE p.id_pinjam = '$id'")->result();
+
+			$this->data['anggota'] = $this->db->query("SELECT * FROM tbl_login WHERE anggota_id = '". $this->data['pinjam']->anggota_id ."'")->row();
+
+			if($this->session->userdata('level') == 'Anggota'){
+				$this->load->view('header_view', $this->data);
+				$this->load->view('sidebar_view', $this->data);
+				$this->load->view('pinjam/detail', $this->data);
+				$this->load->view('footer_view', $this->data);
 			}else{
-				echo '<script>alert("DETAIL TIDAK DITEMUKAN");window.location="'.base_url('transaksi').'"</script>';
+				$this->load->view('header_view', $this->data);
+				$this->load->view('sidebar_view', $this->data);
+				$this->load->view('pinjam/detail', $this->data);
+				$this->load->view('footer_view', $this->data);
 			}
 		}else{
-			$count = $this->M_Admin->CountTableId('tbl_pinjam','pinjam_id',$id);
-			if($count > 0)
-			{
-				$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `pinjam_id`, 
-				`anggota_id`, `status`, 
-				`tgl_pinjam`, `lama_pinjam`, 
-				`tgl_balik`, `tgl_kembali` 
-				FROM tbl_pinjam WHERE pinjam_id = '$id'")->row();
-			}else{
-				echo '<script>alert("DETAIL TIDAK DITEMUKAN");window.location="'.base_url('transaksi').'"</script>';
-			}
+			$this->session->set_flashdata('pesan', '<div class="alert alert-danger">Data Peminjaman tidak ditemukan!</div>');
+			redirect(base_url('transaksi'));
 		}
-		$this->data['sidebar'] = 'kembali';
-		$this->data['title_web'] = 'Detail Pinjam Buku ';
-		$this->load->view('header_view',$this->data);
-		$this->load->view('sidebar_view',$this->data);
-		$this->load->view('pinjam/detail',$this->data);
-		$this->load->view('footer_view',$this->data);
 	}
 
 	public function kembalipinjam()
 	{
-		$this->data['idbo'] = $this->session->userdata('ses_id');		
+		$this->data['idbo'] = $this->session->userdata('ses_id');
 		$id = $this->uri->segment('3');
-		$count = $this->M_Admin->CountTableId('tbl_pinjam','pinjam_id',$id);
+		$count = $this->M_Admin->CountTableId('tbl_pinjam','id_pinjam',$id);
 		if($count > 0)
 		{
-			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT `pinjam_id`, 
-			`anggota_id`, `status`, 
-			`tgl_pinjam`, `lama_pinjam`, 
-			`tgl_balik`, `tgl_kembali` 
-			FROM tbl_pinjam WHERE pinjam_id = '$id'")->row();
+			$this->data['pinjam'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, 
+				p.anggota_id, p.status, p.tgl_pinjam, p.lama_pinjam, 
+				p.tgl_balik, p.tgl_kembali 
+				FROM tbl_pinjam p 
+				WHERE p.id_pinjam = '$id' 
+				LIMIT 1")->row();
+
+			$this->data['items'] = $this->db->query("SELECT DISTINCT p.id_pinjam, p.pinjam_id, p.buku_id, 
+				b.buku_id, b.judul_buku, b.penerbit, b.thn_buku 
+				FROM tbl_pinjam p 
+				INNER JOIN tbl_buku b ON b.buku_id = p.buku_id 
+				WHERE p.id_pinjam = '$id'")->result();
+
+			$this->data['title_web'] = 'Detail Pengembalian Buku';
+			$this->load->view('header_view',$this->data);
+			$this->load->view('sidebar_view',$this->data);
+			$this->load->view('pinjam/kembali',$this->data);
+			$this->load->view('footer_view',$this->data);
 		}else{
-			echo '<script>alert("DETAIL TIDAK DITEMUKAN");window.location="'.base_url('transaksi').'"</script>';
+			$this->session->set_flashdata('pesan', '<div class="alert alert-danger">Data Peminjaman tidak ditemukan!</div>');
+			redirect(base_url('transaksi'));
 		}
 
-
-		$this->data['title_web'] = 'Kembali Pinjam Buku ';
-		$this->load->view('header_view',$this->data);
-		$this->load->view('sidebar_view',$this->data);
-		$this->load->view('pinjam/kembali',$this->data);
-		$this->load->view('footer_view',$this->data);
 	}
 
 	public function prosespinjam()
@@ -365,8 +371,9 @@ class Transaksi extends CI_Controller {
 			foreach($pinjam->result_array() as $isi){
 				$pinjam_id = $isi['pinjam_id'];
 				$denda = $this->db->query("SELECT * FROM tbl_denda WHERE pinjam_id = '$pinjam_id'");
-				$jml = $this->db->query("SELECT * FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->num_rows();	
-				$jml = 1;
+				// Hitung jumlah buku yang dipinjam
+				$jml = $this->db->query("SELECT COUNT(DISTINCT buku_id) as total FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->row()->total;
+
 				if($denda->num_rows() > 0){
 					$s = $denda->row();
 					echo $s->denda;
@@ -380,7 +387,8 @@ class Transaksi extends CI_Controller {
 						$lama_waktu = 0;
 					}else{
 						$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif'); 
-						$harga_denda = $jml*($dd->harga_denda*abs($diff));
+						// Hitung denda: harga denda per hari × jumlah hari × jumlah buku
+						$harga_denda = $dd->harga_denda * abs($diff) * $jml;
 						$lama_waktu = abs($diff);
 					}
 				}
