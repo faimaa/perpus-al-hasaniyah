@@ -10,7 +10,9 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">
 	        <div class="box box-primary">
@@ -36,13 +38,14 @@
                                 <th>Stok Tersedia</th>
                                 <th>Dipinjam</th>
                                 <th>Rusak</th>
+                                <th>Hilang</th>
                                 <th>Total Buku</th>
                                 <th>Tanggal Masuk</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                        <?php $no=1;foreach($buku->result_array() as $isi){?>
+                        <?php $no=1; if(is_array($buku)){ foreach($buku as $isi){ ?>
                             <tr>
                                 <td><?= $no;?></td>
                                 <td>
@@ -71,11 +74,15 @@
                                     <span class="label label-danger"><?= isset($isi['jumlah_rusak']) ? (int)$isi['jumlah_rusak'] : 0;?></span>
                                 </td>
                                 <td>
+                                    <span class="label label-warning"><?= isset($isi['jumlah_hilang']) ? (int)$isi['jumlah_hilang'] : 0;?></span>
+                                </td>
+                                <td>
                                     <?php
                                         $jml = isset($isi['jml']) ? (int)$isi['jml'] : 0;
                                         $rusak = isset($isi['jumlah_rusak']) ? (int)$isi['jumlah_rusak'] : 0;
+                                        $hilang = isset($isi['jumlah_hilang']) ? (int)$isi['jumlah_hilang'] : 0;
                                         $dipinjam = isset($isi['dipinjam']) ? (int)$isi['dipinjam'] : 0;
-                                        $total = $jml + $rusak + $dipinjam;
+                                        $total = $jml + $rusak + $hilang + $dipinjam;
                                     ?>
                                     <span class="label label-primary"><?= $total;?></span>
                                 </td>
@@ -91,7 +98,7 @@
 									<?php }?>
                                 </td>
                             </tr>
-                        <?php $no++;}?>
+                        <?php $no++;}}?>
                         </tbody>
                     </table>
 			    </div>

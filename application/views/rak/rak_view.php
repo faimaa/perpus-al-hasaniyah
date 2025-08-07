@@ -10,7 +10,9 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">
 			<div class="row">
@@ -41,7 +43,7 @@
 							<form method="post" action="<?= base_url('data/rakproses');?>">
 								<div class="form-group">
 								<label for="">Nama Rak / Lokasi</label>
-								<input type="text" name="rak" id="rak" class="form-control" placeholder="Contoh : Rak Buku 1" >
+								<input type="text" name="rak" id="rak" class="form-control" placeholder="Contoh : Rak Buku 1" required>
 								
 								</div>
 								<br/>

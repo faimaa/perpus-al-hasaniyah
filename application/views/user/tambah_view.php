@@ -43,8 +43,13 @@
                                 <div class="form-group">
                                     <label>Level</label>
                                     <select name="level" class="form-control" required="required">
+                                    <?php if($this->session->userdata('level') == 'Petugas'){ ?>
+                                        <option>Anggota</option>
+                                    <?php } else { ?>
+                                    <option>Admin</option>
                                     <option>Petugas</option>
                                     <option>Anggota</option>
+                                    <?php } ?>
                                     </select>
                                 </div>
                             </div>

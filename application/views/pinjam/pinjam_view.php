@@ -10,7 +10,9 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">
 	        <div class="box box-primary">
@@ -58,28 +60,29 @@
                                 <td><?= $isi['status'];?></td>
                                 <td>
 									<?php 
-										if($isi['status'] == 'Di Kembalikan')
-										{
-											echo $this->M_Admin->rp($total_denda->denda);
-										}else{
+										if($isi['status'] == 'Di Kembalikan') {
+											// Ambil total denda untuk semua buku dalam peminjaman ini
+											$total = $this->db->query("SELECT SUM(denda) as total_denda 
+												FROM tbl_denda WHERE pinjam_id = '$pinjam_id'")->row();
+											echo $this->M_Admin->rp($total->total_denda);
+										} else {
+											// Hitung potensi denda untuk buku yang belum dikembalikan
+											$buku_dipinjam = $this->db->query("SELECT COUNT(*) as jml 
+												FROM tbl_pinjam 
+												WHERE pinjam_id = '$pinjam_id' 
+												AND (status IS NULL OR status != 'Di Kembalikan')")->row();
+											
 											$date1 = new DateTime(date('Y-m-d'));
 											$date2 = new DateTime($isi['tgl_balik']);
 											$diff = $date1->diff($date2)->days;
-											if($date1 > $date2)
-											{
+
+											if($date1 > $date2) {
 												echo $diff.' hari';
 												$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif');
-												
-												// Hitung denda harian
-												$denda_per_hari = $dd->harga_denda;
-												$total_denda = $denda_per_hari * $diff;
-												
-												// Ambil jumlah buku untuk informasi saja
-												$jml_buku = $this->db->query("SELECT COUNT(DISTINCT buku_id) as total FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->row()->total;
-												
-												echo '<p style="color:red;font-size:18px;">'.$this->M_Admin->rp($total_denda).' 
-												</p><small style="color:#333;">* Untuk '.$jml_buku.' Buku</small>';
-											}else{
+												$potensi_denda = $dd->harga_denda * $diff;
+												echo '<p style="color:red;font-size:18px;">'.$this->M_Admin->rp($potensi_denda).' 
+												</p><small style="color:#333;">* Per Buku</small>';
+											} else {
 												echo '<p style="color:green;">Tidak Ada Denda</p>';
 											}
 										}

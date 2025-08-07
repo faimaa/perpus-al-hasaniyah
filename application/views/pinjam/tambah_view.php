@@ -17,6 +17,17 @@
                 </div>
 			    <!-- /.box-header -->
 			    <div class="box-body">
+                    <?php if ($this->session->flashdata('notif_kosong')): ?>
+                        <div class="alert alert-danger" id="notif-kosong">
+                            <?php echo $this->session->flashdata('notif_kosong'); ?>
+                        </div>
+                        <script>
+                            setTimeout(function() {
+                                var notif = document.getElementById('notif-kosong');
+                                if (notif) notif.style.display = 'none';
+                            }, 3000);
+                        </script>
+                    <?php endif; ?>
                     <form action="<?php echo base_url('transaksi/prosespinjam');?>" method="POST" enctype="multipart/form-data">
 						
 						<div class="row">

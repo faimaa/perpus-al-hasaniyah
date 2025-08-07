@@ -10,7 +10,46 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
+<?php 
+// Cek apakah ini request pertama kali atau redirect dari aksi tertentu
+$is_redirect = $this->input->get('notif') === '1' || $this->input->get('updated') === '1';
+$pesan = $this->session->flashdata('pesan');
+
+// Hanya tampilkan notifikasi jika ada pesan DAN ini adalah redirect dari aksi
+if (!empty($pesan) && $is_redirect) {
+    echo $pesan;
+?>
+<script>
+// Auto hide alert after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    // Hapus parameter notif dari URL tanpa reload halaman
+    if (window.history.replaceState && (new URLSearchParams(window.location.search).has('notif') || new URLSearchParams(window.location.search).has('updated'))) {
+        const url = new URL(window.location);
+        url.searchParams.delete('notif');
+        url.searchParams.delete('updated');
+        window.history.replaceState({}, '', url);
+    }
+
+    // Set timeout untuk auto-hide notifikasi
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            var fadeEffect = setInterval(function() {
+                if (!alert.style.opacity) {
+                    alert.style.opacity = 1;
+                }
+                if (alert.style.opacity > 0) {
+                    alert.style.opacity -= 0.1;
+                } else {
+                    clearInterval(fadeEffect);
+                    alert.style.display = 'none';
+                }
+            }, 50);
+        });
+    }, 5000);
+});
+</script>
+<?php } ?>
 	<div class="row">
 	    <div class="col-md-12">
 	        <div class="box box-danger box-solid">
@@ -71,11 +110,13 @@
                                 <td><?= $isi['tgl_rusak'] ? date('d/m/Y H:i', strtotime($isi['tgl_rusak'])) : '-';?></td>
                                 <td><?= $isi['nama_petugas'] ? $isi['nama_petugas'] : '-';?></td>
                                 <td style="width:25%;">
-								<?php if($this->session->userdata('level') == 'Admin'){?>
-								<a href="<?= base_url('data/detailbukurusak/'.$isi['id']);?>" class="btn btn-info btn-sm"><i class="fa fa-info-circle"></i> Detail Rusak</a>
+								<?php if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){?>
+								<a href="<?= base_url('data/detailbukurusak/'.$isi['id']);?>" class="btn btn-info btn-sm"><i class="fa fa-eye"></i> Detail Rusak</a>
+                                <?php if($this->session->userdata('level') == 'Admin'){ ?>
                                 <a href="javascript:void(0)" onclick="konfirmasiPerbaikan(<?= $isi['id'] ?>, '<?= $isi['judul_buku'] ?>')" class="btn btn-success btn-sm">
                                     <i class="fa fa-wrench"></i> Perbaiki
                                 </a>
+                                <?php } ?>
 								<?php }?>
                                 </td>
                             </tr>
@@ -108,14 +149,4 @@ function konfirmasiPerbaikan(id, judul_buku) {
         }
     });
 }
-
-<?php if($this->session->flashdata('pesan')) { ?>
-    Swal.fire({
-        icon: '<?= strpos($this->session->flashdata("pesan"), "success") !== false ? "success" : "error" ?>',
-        judul_buku: '<?= strpos($this->session->flashdata("pesan"), "success") !== false ? "Berhasil!" : "Gagal!" ?>',
-        html: '<?= $this->session->flashdata("pesan") ?>',
-        timer: 3000,
-        showConfirmButton: false
-    });
-<?php } ?>
 </script>

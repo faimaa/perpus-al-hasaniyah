@@ -10,6 +10,9 @@
     </ol>
   </section>
   <section class="content">
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">
 	        <div class="box box-primary">

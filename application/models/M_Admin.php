@@ -173,5 +173,20 @@ class M_Admin extends CI_Model
       }
       return $string;
   }
+
+  // Fungsi untuk generate pinjam_id berurutan
+  public function generate_pinjam_id() {
+      $this->db->select('pinjam_id');
+      $this->db->order_by('id_pinjam', 'DESC');
+      $this->db->limit(1);
+      $query = $this->db->get('tbl_pinjam');
+      if ($query->num_rows() > 0) {
+          $last_id = $query->row()->pinjam_id;
+          $number = intval(substr($last_id, 2)) + 1;
+          return 'PJ' . str_pad($number, 4, '0', STR_PAD_LEFT);
+      } else {
+          return 'PJ0001';
+      }
+  }
 }
 ?>

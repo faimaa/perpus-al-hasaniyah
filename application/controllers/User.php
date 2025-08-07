@@ -93,14 +93,14 @@ class User extends CI_Controller {
             $this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
             <p> Daftar User telah berhasil !</p>
             </div></div>');
-			redirect(base_url('user'));
+			redirect(base_url('user?updated=1'));
 		}    
       
     }
 
     public function edit()
     {	
-		if($this->session->userdata('level') == 'Petugas'){
+		if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
 			if($this->uri->segment('3') == ''){ echo '<script>alert("halaman tidak ditemukan");window.location="'.base_url('user').'";</script>';}
 			$this->data['idbo'] = $this->session->userdata('ses_id');
 			$count = $this->M_Admin->CountTableId('tbl_login','id_login',$this->uri->segment('3'));
@@ -130,7 +130,7 @@ class User extends CI_Controller {
 	
 	public function detail()
     {	
-		if($this->session->userdata('level') == 'Petugas'){
+		if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
 			if($this->uri->segment('3') == ''){ echo '<script>alert("halaman tidak ditemukan");window.location="'.base_url('user').'";</script>';}
 			$this->data['idbo'] = $this->session->userdata('ses_id');
 			$count = $this->M_Admin->CountTableId('tbl_login','id_login',$this->uri->segment('3'));
@@ -192,19 +192,18 @@ class User extends CI_Controller {
 					'alamat'=>$alamat,
 				);
 				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
-				if($this->session->userdata('level') == 'Petugas')
-				{
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
 					<p> Berhasil Update User : '.$nama.' !</p>
 					</div></div>');
-					redirect(base_url('user'));  
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
 				}elseif($this->session->userdata('level') == 'Anggota'){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
 					<p> Berhasil Update User : '.$nama.' !</p>
 					</div></div>');
-					redirect(base_url('user/edit/'.$id_login)); 
+					redirect(base_url('user/edit/'.$id_login.'?updated=1')); 
 				}
 			}else{
 				$data = array(
@@ -220,13 +219,12 @@ class User extends CI_Controller {
 				);
 				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
 			
-				if($this->session->userdata('level') == 'Petugas')
-				{
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
 					<p> Berhasil Update User : '.$nama.' !</p>
 					</div></div>');
-					redirect(base_url('user'));  
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
 				}elseif($this->session->userdata('level') == 'Anggota'){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
@@ -257,19 +255,18 @@ class User extends CI_Controller {
 				);
 				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
 			
-				if($this->session->userdata('level') == 'Petugas')
-				{
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
 					<p> Berhasil Update User : '.$nama.' !</p>
 					</div></div>');
-					redirect(base_url('user'));  
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
 				}elseif($this->session->userdata('level') == 'Anggota'){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
 					<p> Berhasil Update User : '.$nama.' !</p>
 					</div></div>');
-					redirect(base_url('user/edit/'.$id_login)); 
+					redirect(base_url('user/edit/'.$id_login.'?updated=1')); 
 				} 
 		
 			}else{
@@ -287,13 +284,12 @@ class User extends CI_Controller {
 				);
 				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
 			
-				if($this->session->userdata('level') == 'Petugas')
-				{
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
 					<p> Berhasil Update User : '.$nama.' !</p>
 					</div></div>');
-					redirect(base_url('user'));  
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
 				}elseif($this->session->userdata('level') == 'Anggota'){
 
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
@@ -315,6 +311,6 @@ class User extends CI_Controller {
 		$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-warning">
 		<p> Berhasil Hapus User !</p>
 		</div></div>');
-		redirect(base_url('user'));  
+		redirect(base_url('user?updated=1'));  
     }
 }

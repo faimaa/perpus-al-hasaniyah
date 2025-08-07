@@ -26,7 +26,6 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
 	<div class="row">
 	    <div class="col-md-12">
 	        <div class="box box-primary">
@@ -44,11 +43,10 @@
                                 <th>ID Anggota</th>
                                 <th>Nama</th>
                                 <th>Pinjam</th>
-                                <th>Balik</th>
+                                <th>Di Kembalikan</th>
                                 <th style="width:10%">Status</th>
-                                <th>Kembali</th>
                                 <th>Denda</th>
-                                <th>Aksi</th>
+                                <!-- <th>Aksi</th> -->
                             </tr>
 						</thead>
 						<tbody>
@@ -57,55 +55,26 @@
 							foreach($pinjam->result_array() as $isi){
                                 $anggota_id = $isi['anggota_id'];
                                 $ang = $this->db->query("SELECT * FROM tbl_login WHERE anggota_id = '$anggota_id'")->row();
-
-                                $pinjam_id = $isi['pinjam_id'];
-                                $denda = $this->db->query("SELECT * FROM tbl_denda WHERE pinjam_id = '$pinjam_id'");
-                                $total_denda = $denda->row();
-						?>
+?>
                             <tr>
                                 <td><?= $no;?></td>
                                 <td><?= $isi['pinjam_id'];?></td>
                                 <td><?= $isi['anggota_id'];?></td>
                                 <td><?= $ang->nama;?></td>
                                 <td><?= $isi['tgl_pinjam'];?></td>
-                                <td><?= $isi['tgl_balik'];?></td>
+                                <td><?= $isi['tgl_kembali'];?></td>
                                 <td><?= $isi['status'];?></td>
-								<td>
-									<?php 
-										if($isi['tgl_kembali'] == '0')
-										{
-											echo '<p style="color:red;">belum dikembalikan</p>';
-										}else{
-											echo $isi['tgl_kembali'];
-										}
-									
-									?>
-								</td>
                                 <td>
 									<?php 
-										$jml = $this->db->query("SELECT * FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->num_rows();			
-										if($denda->num_rows() > 0){
-											$s = $denda->row();
-											echo $this->M_Admin->rp($s->denda);
-										}else{
-											$date1 = date('Ymd');
-											$date2 = preg_replace('/[^0-9]/','',$isi['tgl_balik']);
-											$diff = $date2 - $date1;
-
-											if($diff >= 0 )
-											{
-												echo '<p style="color:green;">
-												Tidak Ada Denda</p>';
-											}else{
-												$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif'); 
-												echo '<p style="color:red;font-size:18px;">'.$this->M_Admin->rp($jml*($dd->harga_denda*abs($diff))).' 
-												</p><small style="color:#333;">* Untuk '.$jml.' Buku</small>';
-											}
+										if(isset($isi['denda']) && $isi['denda'] > 0) {
+											echo '<p style="color:red;">'.$this->M_Admin->rp($isi['denda']).'</p>';
+										} else {
+											echo '<p style="color:green;">Tidak Ada Denda</p>';
 										}
 									?>
 								</td>
-                                <td>
-                                    <?php if($this->session->userdata('level') == 'Petugas'){ ?>
+                                <!-- <td>
+                                    <?php if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){ ?>
                                         <a href="<?= base_url('transaksi/detailpinjam/'.$isi['pinjam_id']);?>" 
                                             class="btn btn-primary btn-sm" title="detail pinjam">
                                             <i class="fa fa-eye"></i></button></a>
@@ -119,7 +88,7 @@
                                             class="btn btn-primary btn-sm" title="detail pinjam">
                                             <i class="fa fa-eye"></i> Detail Pinjam</a>
                                     <?php }?>
-                                </td>
+                                </td> -->
                             </tr>
                         <?php $no++;}?>
                         </tbody>

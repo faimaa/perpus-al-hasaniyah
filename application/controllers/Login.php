@@ -48,7 +48,11 @@ class Login extends CI_Controller {
             $this->session->set_userdata('ses_id',$hasil_login['id_login']);
             $this->session->set_userdata('anggota_id',$hasil_login['anggota_id']);
 
+            if($hasil_login['level'] == 'Anggota'){
+                echo '<script>window.location="'.base_url().'user/edit/'.$hasil_login['id_login'].'";</script>';
+            }else{
             echo '<script>window.location="'.base_url().'dashboard";</script>';
+            }
         }else{
 
             echo '<script>alert("Login Gagal, Periksa Kembali Username dan Password Anda");

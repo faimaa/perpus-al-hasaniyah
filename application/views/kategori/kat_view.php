@@ -10,7 +10,9 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">
 			<div class="row">
@@ -41,7 +43,7 @@
 							<form method="post" action="<?= base_url('data/katproses');?>">
 								<div class="form-group">
 								<label for="">Nama Kategori</label>
-								<input type="text" name="kategori" id="kategori" class="form-control" placeholder="Contoh : Pemrograman Web" >
+								<input type="text" name="kategori" id="kategori" class="form-control" placeholder="Contoh : Pemrograman Web" required>
 								
 								</div>
 								<br/>

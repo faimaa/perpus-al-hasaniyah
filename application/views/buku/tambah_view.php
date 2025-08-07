@@ -10,7 +10,7 @@
     </ol>
   </section>
   <section class="content">
-	<div class="row">
+    <div class="row">
 	    <div class="col-md-12">
 	        <div class="box box-primary">
                 <div class="box-header with-border">
@@ -40,37 +40,33 @@
                                 </div>
                                 <div class="form-group">
                                     <label>ISBN</label>
-                                    <input type="text" class="form-control" name="isbn"  placeholder="Contoh ISBN : 978-602-8123-35-8">
+                                    <input type="text" class="form-control" name="isbn" required="required" placeholder="Contoh ISBN : 978-602-8123-35-8">
                                 </div>
                                 <div class="form-group">
                                     <label>Judul Buku</label>
-                                    <input type="text" class="form-control" name="title" placeholder="Contoh : Cara Cepat Belajar Pemrograman Web">
+                                    <input type="text" class="form-control" name="judul_buku" required="required" placeholder="Contoh : Cara Cepat Belajar Pemrograman Web">
                                 </div>
                                 <div class="form-group">
                                     <label>Nama Pengarang</label>
-                                    <input type="text" class="form-control" name="pengarang" placeholder="Nama Pengarang">
+                                    <input type="text" class="form-control" name="pengarang" required="required" placeholder="Nama Pengarang">
                                 </div>
                                 <div class="form-group">
                                     <label>Penerbit</label>
-                                    <input type="text" class="form-control" name="penerbit" placeholder="Nama Penerbit">
+                                    <input type="text" class="form-control" name="penerbit" required="required" placeholder="Nama Penerbit">
                                 </div>
                                 <div class="form-group">
                                     <label>Tahun Buku</label>
-                                    <input type="number" class="form-control" name="thn" placeholder="Tahun Buku : 2019">
+                                    <input type="date" class="form-control" name="thn" required="required" placeholder="Tahun Buku : 2019">
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
                                     <label>Jumlah Buku</label>
-                                    <input type="number" class="form-control" name="jml" placeholder="Jumlah buku : 12">
+                                    <input type="number" class="form-control" name="jml" required="required" placeholder="Jumlah buku : 12">
                                 </div>								
                                 <div class="form-group">
                                     <label>Sampul <small style="color:green">(gambar) * opsional</small></label>
                                     <input type="file" accept="image/*" name="gambar">
-                                </div>
-                                <div class="form-group">
-                                    <label>Lampiran Buku <small style="color:green">(pdf) * opsional</small></label>
-                                    <input type="file" accept="application/pdf" name="lampiran">
                                 </div>
                                 <div class="form-group">
                                     <label>Keterangan Lainnya</label>

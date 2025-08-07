@@ -1,4 +1,10 @@
 <?php if (!defined('BASEPATH')) exit('No direct script acess allowed'); ?>
+<style>
+    .bg-warning {
+        background-color: #fbc02d !important;
+        color: #fff !important;
+    }
+</style>
 <div class="content-wrapper">
     <section class="content-header">
         <h1>
@@ -10,7 +16,6 @@
         </ol>
     </section>
     <section class="content">
-        <?php if (!empty($this->session->flashdata())) { echo $this->session->flashdata('pesan'); } ?>
         <div class="row">
             <div class="col-md-12">
                 <div class="box box-primary">
@@ -20,9 +25,6 @@
                                 <h4>Laporan Transaksi</h4>
                             </div>
                             <div class="col-md-6 text-right">
-                                <a href="<?php echo base_url('transaksi/download_history');?>" class="btn btn-success">
-                                    <i class="fa fa-download"></i> Download CSV
-                                </a>
                                 <a href="<?php echo base_url('transaksi/print_full_history_view?tanggal_awal=' . (isset($_GET['tanggal_awal']) ? $_GET['tanggal_awal'] : '') . '&tanggal_akhir=' . (isset($_GET['tanggal_akhir']) ? $_GET['tanggal_akhir'] : '')); ?>" class="btn btn-info" target="_blank">
                                     <i class="fa fa-print"></i> Cetak History Per Periode
                                 </a>
@@ -40,7 +42,7 @@
                             <button type="submit" class="btn btn-primary" name="filter" value="1"><i class="fa fa-filter"></i> Filter</button>
                             <a href="<?php echo base_url('transaksi/history'); ?>" class="btn btn-default">Reset</a>
                         </form>
-                        <div class="table-responsive">
+<div class="table-responsive">
                             <table id="example1" class="table table-bordered table-striped table-hover">
                                 <thead>
                                     <tr>
@@ -54,6 +56,7 @@
                                         <th>Anggota</th>
                                         <th>Petugas</th>
                                         <th>Keterangan</th>
+                                        <th>Harga Denda</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -77,6 +80,12 @@
                                                 case 'Perbaikan Buku':
                                                     $badge_class = 'bg-yellow';
                                                     break;
+                                                case 'Buku Hilang':
+                                                    $badge_class = 'bg-fuchsia';
+                                                    break;
+                                                case 'Mengganti Buku Baru':
+                                                    $badge_class = 'bg-purple';
+                                                    break;
                                             }
                                             ?>
                                             <span class="badge <?= $badge_class ?>"><?= $isi['tipe_transaksi'] ?></span>
@@ -88,6 +97,15 @@
                                         <td><?= $isi['nama_anggota'] ?: '-' ?></td>
                                         <td><?= $isi['nama_petugas'] ?></td>
                                         <td><?= $isi['keterangan'] ?></td>
+                                        <td>
+                                            <?php
+                                            if ($isi['tipe_transaksi'] !== 'Buku Rusak' && !empty($isi['harga_denda'])) {
+                                                echo 'Rp ' . number_format($isi['harga_denda'], 0, ',', '.');
+                                            } else {
+                                                echo '-';
+                                            }
+                                            ?>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>

@@ -10,7 +10,16 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+    <script>
+        if(window.history.replaceState){
+            const url = new URL(window.location);
+            url.searchParams.delete('updated');
+            window.history.replaceState({}, document.title, url.pathname + url.search);
+        }
+    </script>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">
 			<div class="row">
@@ -48,7 +57,7 @@
 							<form method="post" action="<?= base_url('transaksi/dendaproses');?>">
 								<div class="form-group">
 								<label for="">Harga Denda</label>
-									<input type="number" name="harga" class="form-control" placeholder="Contoh : 10000" >
+									<input type="number" name="harga" class="form-control" placeholder="Contoh : 10000" required>
 								</div>
 								<br/>
 								<input type="hidden" name="tambah" value="tambah">

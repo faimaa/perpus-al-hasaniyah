@@ -130,49 +130,60 @@
 										</td>
 									</tr>
 									<tr>
-										<td>Denda</td>
+										<td>Keterlambatan</td>
 										<td>:</td>
 										<td>
 										<?php 
-												$pinjam_id = $pinjam->pinjam_id;
-												$denda = $this->db->query("SELECT * FROM tbl_denda WHERE pinjam_id = '$pinjam_id'");
+												$date1 = new DateTime(date('Y-m-d'));
+												$date2 = new DateTime($pinjam->tgl_balik);
 												
-												$jml = $this->db->query("SELECT * FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->num_rows();			
-												$date1 = date('Ymd');
-												$date2 = preg_replace('/[^0-9]/','',$pinjam->tgl_balik);	
-												$diff = $date1 - $date2;
-												/*	$datetime1 = new DateTime($date1);
-													$datetime2 = new DateTime($date2);
-													$difference = $datetime1->diff($datetime2); */
-												// echo $difference->days;
-												if($diff > 0 )
-												{
+												if($date1 > $date2) {
+													$diff = $date1->diff($date2)->days;
 													echo $diff.' hari';
-													$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif'); 
-													echo '<p style="color:red;font-size:18px;">'.$this->M_Admin->rp($jml*($dd->harga_denda*$diff)).' 
-													</p><small style="color:#333;">* Untuk '.$jml.' Buku</small>';
-												}else{
-													echo '<p style="color:green;text-align:center;">
-													Tidak Ada Denda</p>';
+												} else {
+													echo '<p style="color:green;">Tidak Ada Keterlambatan</p>';
 												}
 											?>
 										</td>
 									</tr>
-									
 									<tr>
-										<td>Kode Buku</td>
+										<td>Tarif Denda</td>
 										<td>:</td>
 										<td>
 										<?php
-											$pin = $this->M_Admin->get_tableid('tbl_pinjam','pinjam_id',$pinjam->pinjam_id);
-											$no =1;
-											foreach($pin as $isi)
-											{
-												$buku = $this->M_Admin->get_tableid_edit('tbl_buku','buku_id',$isi['buku_id']);
-												echo $no.'. '.$buku->buku_id.'<br/>';
-											$no++;}
-
-										?>
+												$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif');
+												echo $this->M_Admin->rp($dd->harga_denda).'/hari/buku';
+											?>
+										</td>
+									</tr>
+									<tr>
+										<td>Total Denda</td>
+										<td>:</td>
+										<td>
+										<?php 
+												$pinjam_id = $pinjam->pinjam_id;
+												if($pinjam->status == 'Di Kembalikan') {
+													// Ambil total denda untuk semua buku dalam peminjaman ini
+													$total = $this->db->query("SELECT SUM(denda) as total_denda 
+														FROM tbl_denda WHERE pinjam_id = '$pinjam_id'")->row();
+														echo '<strong>'.$this->M_Admin->rp($total->total_denda).'</strong>';
+												} else {
+													$date1 = new DateTime(date('Y-m-d'));
+													$date2 = new DateTime($pinjam->tgl_balik);
+													
+													if($date1 > $date2) {
+														$diff = $date1->diff($date2)->days;
+														$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif');
+														
+														// Hitung jumlah buku yang dipinjam
+														$buku_count = count($items);
+														$potensi_denda = $dd->harga_denda * $diff * $buku_count;
+														echo '<strong style="color:red;font-size:18px;">'.$this->M_Admin->rp($potensi_denda).'</strong>';
+													} else {
+														echo '<p style="color:green;">Tidak Ada Denda</p>';
+													}
+												}
+											?>
 										</td>
 									</tr>
 									<tr>
@@ -183,25 +194,52 @@
 												<thead>
 													<tr>
 														<th>No</th>
+														<th>Kode Buku</th>
 														<th>Title</th>
 														<th>Penerbit</th>
 														<th>Tahun</th>
+														<th>Denda</th>
 													</tr>
 												</thead>
 												<tbody>
 												<?php 
 													$no=1;
-													foreach($pin as $isi)
+													$date1 = new DateTime(date('Y-m-d'));
+													$date2 = new DateTime($pinjam->tgl_balik);
+													$diff = $date1->diff($date2)->days;
+													$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif');
+													$total_denda = 0;
+													
+													// Menggunakan items yang berisi data berdasarkan id_pinjam
+													foreach($items as $isi)
 													{
-														$buku = $this->M_Admin->get_tableid_edit('tbl_buku','buku_id',$isi['buku_id']);
+														$buku = $this->M_Admin->get_tableid_edit('tbl_buku','buku_id',$isi->buku_id);
 												?>
 													<tr>
 														<td><?= $no;?></td>
-														<td><?= $buku->title;?></td>
-														<td><?= $buku->penerbit;?></td>
+														<td><?= $buku->buku_id;?></td>
+														<td><?= $buku->judul_buku;?></td>
+														<td><?= $buku->pengarang;?></td>
 														<td><?= $buku->thn_buku;?></td>
+														<td>
+															<?php
+																if($date1 > $date2) {
+																	$denda_per_buku = $dd->harga_denda * $diff;
+																	$total_denda += $denda_per_buku;
+																	echo $this->M_Admin->rp($denda_per_buku).'';
+																} else {
+																	echo '<span style="color:green">Tidak Ada Denda</span>';
+																}
+															?>
+														</td>
 													</tr>
 												<?php $no++;}?>
+												<?php if($date1 > $date2): ?>
+												<tr>
+													<td colspan="5" align="right"><strong>Total Denda:</strong></td>
+													<td><strong><?= $this->M_Admin->rp($total_denda) ?></strong></td>
+												</tr>
+												<?php endif; ?>
 												</tbody>
 											</table>
 										</td>
@@ -286,74 +324,97 @@
 			</td>
 		</tr>
 		<tr>
-			<td>Terlewat Masa Pengembalian</td>
+			<td>Keterlambatan</td>
 			<td>:</td>
 			<td>
 			<?php
+				$date1 = new DateTime(date('Y-m-d'));
+				$date2 = new DateTime($pinjam->tgl_balik);
 				
-				$date1 = date('Ymd');
-				$date2 = preg_replace('/[^0-9]/','',$pinjam->tgl_balik);
-				$diff = $date1 - $date2;
-				if($diff > 0)
-				{
-					echo abs($diff);
-
-				}else{
-					echo '0';
+				if($date1 > $date2) {
+					$diff = $date1->diff($date2)->days;
+					echo $diff.' hari';
+				} else {
+					echo '<p style="color:green;">Tidak Ada Keterlambatan</p>';
 				}
-			?> Hari
+			?>
+			</td>
+		</tr>
+		<tr>
+			<td>Tarif Denda</td>
+			<td>:</td>
+			<td>
+			<?php
+				$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif');
+				echo $this->M_Admin->rp($dd->harga_denda).'/hari/buku';
+			?>
 			</td>
 		</tr>
 		<tr>
 			<td>Detail Buku</td>
 			<td>:</td>
 			<td>
-			<?php
-				$pin = $this->M_Admin->get_tableid('tbl_pinjam','pinjam_id',$pinjam->pinjam_id);
-				$no =1;
-				foreach($pin as $isi)
-				{
-					$buku = $this->M_Admin->get_tableid_edit('tbl_buku','buku_id',$isi['buku_id']);
-					echo $no.'. '.$buku->buku_id.' ( '.$buku->title.' )<br/>';
-				$no++;}
-
-			?>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>No</th>
+							<th>Kode Buku</th>
+							<th>Judul Buku</th>
+							<th>Pengarang</th>
+							<th>Tahun</th>
+							<th>Denda</th>
+						</tr>
+					</thead>
+					<tbody>
+					<?php
+						$no = 1;
+						$total_denda = 0;
+						$date1 = new DateTime(date('Y-m-d'));
+						$date2 = new DateTime($pinjam->tgl_balik);
+						$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif');
+						
+						// Menggunakan items yang berisi data berdasarkan id_pinjam
+						foreach($items as $isi)
+						{
+							$buku = $this->M_Admin->get_tableid_edit('tbl_buku','buku_id',$isi->buku_id);
+					?>
+						<tr>
+							<td><?= $no;?></td>
+							<td><?= $buku->buku_id;?></td>
+							<td><?= $buku->judul_buku;?></td>
+							<td><?= $buku->pengarang;?></td>
+							<td><?= $buku->thn_buku;?></td>
+							<td>
+								<?php
+									if($date1 > $date2) {
+										$diff = $date1->diff($date2)->days;
+										$denda_per_buku = $dd->harga_denda * $diff;
+										$total_denda += $denda_per_buku;
+										echo $this->M_Admin->rp($denda_per_buku).'';
+									} else {
+										echo '<span style="color:green">Tidak Ada Denda</span>';
+									}
+								?>
+							</td>
+						</tr>
+					<?php $no++;}?>
+					<?php if($date1 > $date2): ?>
+					<tr>
+						<td colspan="5" align="right"><strong>Total Denda:</strong></td>
+						<td><strong><?= $this->M_Admin->rp($total_denda) ?></strong></td>
+					</tr>
+					<?php endif; ?>
+					</tbody>
+				</table>
 			</td>
 		</tr>
 
-		<tr>
-			<td>Total Denda</td>
-			<td>:</td>
-			<td>
-			<?php 
-				$pinjam_id = $pinjam->pinjam_id;
-				$denda = $this->db->query("SELECT * FROM tbl_denda WHERE pinjam_id = '$pinjam_id'");
-				
-				$jml = $this->db->query("SELECT * FROM tbl_pinjam WHERE pinjam_id = '$pinjam_id'")->num_rows();			
-				$date1 = date('Ymd');
-				$date2 = preg_replace('/[^0-9]/','',$pinjam->tgl_balik);
-				$diff = $date1 - $date2;
-				/* $datetime1 = new DateTime($date1);
-					$datetime2 = new DateTime($date2);
-					$difference = $datetime1->diff($datetime2);*/
-				// echo $difference->days;
-				if($diff >0 )
-				{
-					$dd = $this->M_Admin->get_tableid_edit('tbl_biaya_denda','stat','Aktif'); 
-					echo '<p style="color:red;font-size:18px;">'.$this->M_Admin->rp($jml*($dd->harga_denda*$diff)).' 
-					</p><small style="color:#333;">* Untuk '.$jml.' Buku</small>';
-				}else{
-					echo '<p style="color:green;text-align:center;">
-					Tidak Ada Denda</p>';
-				}
-			?>
-			</td>
-		</tr>
+
 	</table>
 </div>
 <div class="modal-footer">
 	<div class="pull-right">
-		<a href="<?= base_url('transaksi/prosespinjam?kembali='.$pinjam->pinjam_id);?>">
+		<a href="<?= base_url('transaksi/prosespinjam?kembali='.$pinjam->pinjam_id.'&id_pinjam='.$pinjam->id_pinjam);?>">
 		<button class="btn btn-primary"> Proses Pengembalian</button></a>
 		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 	</div>

@@ -40,14 +40,14 @@
             </li>
             <li class="<?php if($this->uri->uri_string() == 'user/edit/'.$this->session->userdata('ses_id')){ echo 'active';}?>">
                 <a href="<?php echo base_url('user/edit/'.$this->session->userdata('ses_id'));?>" class="cursor">
-                    <i class="fa fa-user"></i> <span>Profil</span>
+                    <i class="fa fa-user-circle-o"></i> <span>Profil</span>
                 </a>
             </li>
             <li class="<?php if($this->uri->uri_string() == 'user'){ echo 'active';}?>
                 <?php if($this->uri->uri_string() == 'user/tambah'){ echo 'active';}?>
                 <?php if($this->uri->uri_string() == 'user/edit/'.$this->uri->segment('3')){ echo 'active';}?>">
                 <a href="<?php echo base_url('user');?>" class="cursor">
-                    <i class="fa fa-user"></i> <span>Data Pengguna</span></a>
+                    <i class="fa fa-users"></i> <span>Data Pengguna</span></a>
 			</li>
 			<li class="treeview <?php if($this->uri->uri_string() == 'data/kategori'){ echo 'active';}?>
 				<?php if($this->uri->uri_string() == 'data/rak'){ echo 'active';}?>
@@ -77,6 +77,11 @@
                         <a href="<?php echo base_url("data/bukurusak");?>" class="cursor">
                             <span class="fa fa-book"></span> Data Buku Rusak
                             
+                        </a>
+                    </li>
+                    <li class="<?php if($this->uri->uri_string() == 'data/bukuhilang'){ echo 'active';}?>">
+                        <a href="<?php echo base_url('data/bukuhilang'); ?>" class="cursor">
+                            <span class="fa fa-book"></span> Data Buku Hilang
                         </a>
                     </li>
                     <li class=" <?php if($this->uri->uri_string() == 'data/kategori'){ echo 'active';}?>">

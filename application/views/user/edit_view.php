@@ -10,10 +10,11 @@
     </ol>
   </section>
   <section class="content">
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">	
-			<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
-
 	        <div class="box box-primary">
                 <div class="box-header with-border">
                 </div>
@@ -45,12 +46,13 @@
                                 <div class="form-group">
                                     <label>Level</label>
                                     <select name="level" class="form-control" required="required">
-									<?php if($this->session->userdata('level') == 'Petugas'){?>
-										<option <?php if($user->level == 'Petugas'){ echo 'selected';}?>>Petugas</option>
-										<option <?php if($user->level == 'Anggota'){ echo 'selected';}?>>Anggota</option>
-									<?php }elseif($this->session->userdata('level') == 'Anggota'){?>
-										<option <?php if($user->level == 'Anggota'){ echo 'selected';}?>>Anggota</option>
-									<?php }?>
+                                    <?php if($this->session->userdata('level') == 'Admin'){ ?>
+                                        <option value="Admin" <?php if($user->level == 'Admin'){ echo 'selected';}?>>Admin</option>
+                                        <option value="Petugas" <?php if($user->level == 'Petugas'){ echo 'selected';}?>>Petugas</option>
+                                        <option value="Anggota" <?php if($user->level == 'Anggota'){ echo 'selected';}?>>Anggota</option>
+                                    <?php } elseif($this->session->userdata('level') == 'Petugas'){ ?>
+                                        <option value="Anggota" <?php if($user->level == 'Anggota'){ echo 'selected';}?>>Anggota</option>
+                                    <?php } ?>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -75,7 +77,7 @@
                                     <input type="file" accept="image/*" name="gambar">
                                     
                                     <br/>
-                                    <img src="<?= base_url('assets_style/image/'.$user->foto);?>" class="img-responsive" alt="#">
+                                    <img src="<?= base_url('assets_style/image/'.$user->foto);?>" class="img-responsive" alt="#" style="max-width:200px; height:auto;">
                                 </div>
                                 <div class="form-group">
                                     <label>Alamat</label>

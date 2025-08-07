@@ -10,7 +10,9 @@
     </ol>
   </section>
   <section class="content">
-	<?php if(!empty($this->session->flashdata())){ echo $this->session->flashdata('pesan');}?>
+<?php if($this->input->get('updated') && $this->session->flashdata('pesan')): ?>
+    <?= $this->session->flashdata('pesan'); ?>
+<?php endif; ?>
 	<div class="row">
 	    <div class="col-md-12">
 	        <div class="box box-primary">
@@ -44,9 +46,9 @@
                                 <td><?= $isi['anggota_id'];?></td>
                                 <td>
                                     <center>
-                                        <?php if(!empty($isi['foto'] !== "-")){?>
-                                        <img src="<?php echo base_url();?>assets_style/image/<?php echo $isi['foto'];?>" alt="#" 
-                                        class="img-responsive" style="height:auto;width:100px;"/>
+                                        <?php if(!empty($isi['foto'] !== "0")){?>
+                                        <img src="<?php echo base_url('assets_style/image/');?><?php echo $isi['foto'];?>" alt="#" 
+                                        class="img-responsive" style="height:100px;width:100px;"/>
                                         <?php }else{?>
                                             <!--<img src="" alt="#" class="user-image" style="border:2px solid #fff;"/>-->
                                             <i class="fa fa-user fa-3x" style="color:#333;"></i>
@@ -60,11 +62,13 @@
                                 <td><?= $isi['level'];?></td>
                                 <td><?= $isi['alamat'];?></td>
                                 <td style="width:20%;">
-                                    <a href="<?= base_url('user/edit/'.$isi['id_login']);?>"><button class="btn btn-success"><i class="fa fa-edit"></i></button></a>
-                                    <a href="<?= base_url('user/del/'.$isi['id_login']);?>" onclick="return confirm('Anda yakin user akan dihapus ?');">
-									<button class="btn btn-danger"><i class="fa fa-trash"></i></button></a>
-									<a href="<?= base_url('user/detail/'.$isi['id_login']);?>" target="_blank"><button class="btn btn-primary">
-										<i class="fa fa-print"></i> Cetak Kartu</button></a>
+                                    <?php if($this->session->userdata('level') == 'Admin'){ ?>
+                                        <a href="<?= base_url('user/edit/'.$isi['id_login']);?>"><button class="btn btn-success"><i class="fa fa-edit"></i></button></a>
+                                        <a href="<?= base_url('user/del/'.$isi['id_login']);?>" onclick="return confirm('Anda yakin user akan dihapus ?');">
+                                        <button class="btn btn-danger"><i class="fa fa-trash"></i></button></a>
+                                    <?php } ?>
+                                    <a href="<?= base_url('user/detail/'.$isi['id_login']);?>" target="_blank"><button class="btn btn-primary">
+                                        <i class="fa fa-print"></i> Cetak Kartu</button></a>
                                 </td>
                             </tr>
                         <?php $no++;}?>
