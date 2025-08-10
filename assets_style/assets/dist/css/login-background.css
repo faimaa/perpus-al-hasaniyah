@@ -1,0 +1,62 @@
+/* Login Background Styling */
+.login-page {
+    background: url('https://perpus-al-hasaniyah-production-2fda.up.railway.app/assets_style/image/1.webp') no-repeat center center fixed !important;
+    background-size: cover !important;
+    min-height: 100vh;
+    position: relative;
+}
+
+.login-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.login-box {
+    position: relative;
+    z-index: 2;
+}
+
+.login-box-body {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border: 2px solid #226bbf !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+.login-logo a {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    font-weight: bold;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #226bbf !important;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: #226bbf !important;
+    box-shadow: 0 0 0 0.2rem rgba(34, 107, 191, 0.25) !important;
+}
+
+.btn-primary {
+    background-color: #226bbf !important;
+    border-color: #226bbf !important;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #1a5aa3 !important;
+    border-color: #1a5aa3 !important;
+}
+
+footer .login-box-body {
+    background: rgba(34, 107, 191, 0.9) !important;
+    border: none !important;
+} 

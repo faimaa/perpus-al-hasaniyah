@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/responsivelogin.css');?>">
   <!-- Railway Fix CSS -->
   <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/railway-fix.css');?>">
+  <!-- Login Background CSS -->
+  <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/login-background.css');?>">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -44,7 +46,7 @@
            }
     </style>
   </head>
-<body class="hold-transition login-page" style="overflow-y: hidden;background:url('<?php echo base_url('assets_style/image/1.webp');?>')no-repeat;background-size:100%;">
+<body class="hold-transition login-page">
 <div class="login-box">
 	<br/>
   <div class="login-logo">
