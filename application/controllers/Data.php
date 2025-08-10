@@ -246,7 +246,10 @@ class Data extends CI_Controller {
 			$this->data['rakbuku'] =  $this->db->query("SELECT * FROM tbl_rak ORDER BY id_rak DESC")->result_array();
 
 		}else{
-			echo '<script>alert("BUKU TIDAK DITEMUKAN");window.location="'.base_url('data').'"</script>';
+			$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
+					<p>BUKU TIDAK DITEMUKAN</p>
+				</div></div>');
+			redirect(base_url('data'));
 		}
 
 		$this->data['title_web'] = 'Data Buku Edit';
@@ -463,15 +466,17 @@ class Data extends CI_Controller {
 				'tgl_masuk' => date('Y-m-d H:i:s')
 			);
 
+			// Initialize config array for uploads
+			$config = array();
+			$config['upload_path'] = './assets_style/image/buku/';
+			$config['allowed_types'] = 'gif|jpg|jpeg|png'; 
+			$config['encrypt_name'] = TRUE;
+
 			$this->load->library('upload',$config);
 			if(!empty($_FILES['gambar']['name']))
 			{
-				// setting konfigurasi upload
-				$config['upload_path'] = './assets_style/image/buku/';
+				// Update config for image upload
 				$config['allowed_types'] = 'gif|jpg|jpeg|png'; 
-				$config['encrypt_name'] = TRUE; //nama yang terupload nantinya
-				// load library upload
-				$this->load->library('upload',$config);
 				$this->upload->initialize($config);
 
 				if ($this->upload->do_upload('gambar')) {
@@ -479,8 +484,8 @@ class Data extends CI_Controller {
 					$file1 = array('upload_data' => $this->upload->data());
 					$this->db->set('sampul', $file1['upload_data']['file_name']);
 				}else{
-					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
-							<p> Edit Buku Gagal !</p>
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
+							<p> Tambah Buku Gagal !</p>
 						</div></div>');
 					redirect(base_url('data')); 
 				}
@@ -488,12 +493,8 @@ class Data extends CI_Controller {
 
 			if(!empty($_FILES['lampiran']['name']))
 			{
-				// setting konfigurasi upload
-				$config['upload_path'] = './assets_style/image/buku/';
+				// Update config for PDF upload
 				$config['allowed_types'] = 'pdf'; 
-				$config['encrypt_name'] = TRUE; //nama yang terupload nantinya
-				// load library upload
-				$this->load->library('upload',$config);
 				$this->upload->initialize($config);
 				// script uplaod file kedua
 				if ($this->upload->do_upload('lampiran')) {
@@ -502,8 +503,8 @@ class Data extends CI_Controller {
 					$this->db->set('lampiran', $file2['upload_data']['file_name']);
 				}else{
 
-					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
-							<p> Edit Buku Gagal !</p>
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
+							<p> Tambah Buku Gagal !</p>
 						</div></div>');
 					redirect(base_url('data')); 
 				}
@@ -534,14 +535,19 @@ class Data extends CI_Controller {
 				'tgl_masuk' => date('Y-m-d H:i:s')
 			);
 
+			// Initialize config array for uploads in edit mode
+			$config = array();
+			$config['upload_path'] = './assets_style/image/buku/';
+			$config['allowed_types'] = 'gif|jpg|jpeg|png'; 
+			$config['encrypt_name'] = TRUE;
+			
+			// Load upload library for edit mode
+			$this->load->library('upload',$config);
+
 			if(!empty($_FILES['gambar']['name']))
 			{
-				// setting konfigurasi upload
-				$config['upload_path'] = './assets_style/image/buku/';
+				// Update config for image upload
 				$config['allowed_types'] = 'gif|jpg|jpeg|png'; 
-				$config['encrypt_name'] = TRUE; //nama yang terupload nantinya
-				// load library upload
-				$this->load->library('upload',$config);
 				$this->upload->initialize($config);
 
 				if ($this->upload->do_upload('gambar')) {
@@ -562,12 +568,8 @@ class Data extends CI_Controller {
 
 			if(!empty($_FILES['lampiran']['name']))
 			{
-				// setting konfigurasi upload
-				$config['upload_path'] = './assets_style/image/buku/';
+				// Update config for PDF upload
 				$config['allowed_types'] = 'pdf'; 
-				$config['encrypt_name'] = TRUE; //nama yang terupload nantinya
-				// load library upload
-				$this->load->library('upload',$config);
 				$this->upload->initialize($config);
 				// script uplaod file kedua
 				if ($this->upload->do_upload('lampiran')) {
@@ -610,7 +612,10 @@ class Data extends CI_Controller {
 			{			
 				$this->data['kat'] = $this->db->query("SELECT *FROM tbl_kategori WHERE id_kategori='$id'")->row();
 			}else{
-				echo '<script>alert("KATEGORI TIDAK DITEMUKAN");window.location="'.base_url('data/kategori').'"</script>';
+				$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
+						<p>KATEGORI TIDAK DITEMUKAN</p>
+					</div></div>');
+				redirect(base_url('data/kategori'));
 			}
 		}
 
@@ -686,7 +691,10 @@ class Data extends CI_Controller {
 			{	
 				$this->data['rak'] = $this->db->query("SELECT *FROM tbl_rak WHERE id_rak='$id'")->row();
 			}else{
-				echo '<script>alert("KATEGORI TIDAK DITEMUKAN");window.location="'.base_url('data/rak').'"</script>';
+				$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
+						<p>RAK TIDAK DITEMUKAN</p>
+					</div></div>');
+				redirect(base_url('data/rak'));
 			}
 		}
 
