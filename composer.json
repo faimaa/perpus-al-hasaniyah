@@ -16,8 +16,15 @@
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
 	},
-	"require-dev": {
-		"mikey179/vfsStream": "1.1.*",
-		"phpunit/phpunit": "4.* || 5.*"
+	"config": {
+		"optimize-autoloader": true,
+		"classmap-authoritative": true
+	},
+	"scripts": {
+		"post-install-cmd": [
+			"chmod -R 777 application/cache",
+			"chmod -R 777 application/logs",
+			"chmod -R 777 application/sessions"
+		]
 	}
 }

@@ -47,8 +47,18 @@ RUN mkdir -p /var/www/html/application/cache \
 # Copy Apache configuration
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
+# Set production environment
+ENV CI_ENVIRONMENT=production
+
+# Railway MySQL Environment Variables (will be overridden by Railway)
+ENV MYSQLHOST="mysql.railway.internal"
+ENV MYSQLPORT="3306"
+ENV MYSQLDATABASE="railway"
+ENV MYSQLUSER="root"
+ENV MYSQLPASSWORD="bVtkQHAqbFKxGoMuBoMslpIEaJogYtzv"
+
 # Expose port
 EXPOSE 80
 
 # Start Apache
-CMD ["apache2-foreground"]
+CMD ["apache2-foreground"] 

@@ -47,3 +47,7 @@ npm-debug.log*
 .env
 .env.local
 .env.production
+
+# Setup scripts (don't include in production)
+setup_*.php
+convert_and_import.php 

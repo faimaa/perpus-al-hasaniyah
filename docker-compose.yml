@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./application/cache:/var/www/html/application/cache
+      - ./application/logs:/var/www/html/application/logs
+      - ./application/sessions:/var/www/html/application/sessions
+    environment:
+      - CI_ENVIRONMENT=production
+    depends_on:
+      - db
+  
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: perpus_new
+      MYSQL_USER: perpus_user
+      MYSQL_PASSWORD: perpus_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db_sql:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data: 
