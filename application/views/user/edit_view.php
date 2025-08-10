@@ -79,7 +79,7 @@
                                     <input type="file" accept="image/*" name="gambar">
                                     
                                     <br/>
-                                    <img src="<?= base_url('assets_style/image/'.$user->foto);?>" class="img-responsive" alt="#" style="max-width:200px; height:auto;">
+                                    <?php echo get_user_photo($user->foto, $user->nama, 'xl'); ?>
                                 </div>
                                 <div class="form-group">
                                     <label>Alamat</label>
@@ -104,3 +104,35 @@
     </div>
 </section>
 </div>
+
+<script>
+// Photo preview functionality
+document.querySelector('input[name="gambar"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Check if file is an image
+        if (!file.type.startsWith('image/')) {
+            alert('Silakan pilih file gambar (JPG, PNG, GIF)');
+            this.value = '';
+            return;
+        }
+        
+        // Check file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar. Maksimal 2MB');
+            this.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Create preview image
+            const previewContainer = document.querySelector('.user-avatar-placeholder');
+            if (previewContainer) {
+                previewContainer.innerHTML = `<img src="${e.target.result}" class="img-responsive img-thumbnail" alt="Preview Foto" style="max-width:200px; height:auto;border:2px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1);">`;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>

@@ -101,7 +101,7 @@ error_reporting(0);
                     <div style="display:flex;flex-direction:column;align-items:center;position:relative;">
                         <div style="width:110px;height:110px;display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:10px;">
                             <div style="position:absolute;top:0;left:0;width:110px;height:110px;border-radius:50%;background:conic-gradient(from 180deg at 50% 50%, #ffd700 0%, #fffbe0 30%, #ffd700 60%, #fffbe0 100%);box-shadow:0 0 16px 4px #ffe066,0 2px 8px rgba(0,0,0,0.10);filter:blur(0.5px);"></div>
-                            <img src="<?php echo base_url();?>assets_style/image/<?php echo $user->foto;?>" style="width:96px;height:96px;object-fit:cover;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px 2px #ffd700,0 2px 8px rgba(0,0,0,0.10);position:relative;z-index:2;">
+                            <?php echo get_user_photo($user->foto, $user->nama, 'lg'); ?>
 							</div>
                         <div style="font-size:19px;font-weight:700;color:#2d3a4b;letter-spacing:0.5px;margin-bottom:2px;z-index:4;">
                             <?= $user->nama; ?>

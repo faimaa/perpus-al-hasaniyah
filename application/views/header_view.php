@@ -33,6 +33,9 @@
   <link rel="stylesheet" href="<?php echo base_url();?>assets_style/assets/dist/css/AdminLTE.css">
 	<link rel="stylesheet" href="<?php echo base_url();?>assets_style/assets/dist/css/responsive.css">
 	
+  <!-- User Photos Styling -->
+  <link rel="stylesheet" href="<?php echo base_url();?>assets_style/css/user-photos.css">
+	
   <!-- Bootstrap time Picker -->
   <link rel="stylesheet" href="<?php echo base_url();?>assets_style/assets/plugins/timepicker/bootstrap-timepicker.min.css">
   <!-- bootstrap datepicker -->
@@ -46,6 +49,10 @@
   <link rel="stylesheet" href="<?php echo base_url();?>assets_style/assets/plugins/pace/pace.min.css">
   <!-- jQuery 3 -->
   <script src="<?php echo base_url();?>assets_style/assets/bower_components/jquery/dist/jquery.min.js"></script>
+  
+  <!-- User Photos JavaScript -->
+  <script src="<?php echo base_url();?>assets_style/js/user-photos.js"></script>
+  
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
   <!--[if lt IE 9]>
