@@ -76,11 +76,12 @@ $query_builder = TRUE;
 // Railway Database Configuration
 $db['default'] = array(
     'dsn'	=> '',
-    'hostname' => 'mysql.railway.internal',
-    'username' => 'root',
-    'password' => 'bVtkQHAqbFKxGoMuBoMslpIEaJogYtzv',
-    'database' => 'railway',
-    'dbdriver' => 'mysqli',
+            'hostname' => 'ballast.proxy.rlwy.net',
+        'username' => 'root',
+        'password' => 'bVtkQHAqbFKxGoMuBoMslpIEaJogYtzv',
+        'database' => 'railway',
+        'dbdriver' => 'mysqli',
+        'port' => '15609',
     'dbprefix' => '',
     'pconnect' => FALSE,
     'db_debug' => (ENVIRONMENT !== 'production'),

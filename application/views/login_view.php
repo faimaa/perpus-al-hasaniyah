@@ -17,6 +17,8 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/AdminLTE.min.css');?>">
   <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/responsivelogin.css');?>">
+  <!-- Railway Fix CSS -->
+  <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/railway-fix.css');?>">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -42,8 +44,7 @@
            }
     </style>
   </head>
-<body class="hold-transition login-page" style="overflow-y: hidden;background:url(
-	'<?php echo base_url('assets_style/image/1.webp');?>')no-repeat;background-size:100%;">
+<body class="hold-transition login-page" style="overflow-y: hidden;">
 <div class="login-box">
 	<br/>
   <div class="login-logo">
@@ -51,7 +52,7 @@
   </div>
   <div id="tampilalert"></div>
   <!-- /.login-logo -->
-  <div class="login-box-body" style="border:2px solid #226bbf; background:rgba(255,255,255,0.5); box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+  <div class="login-box-body">
     <p class="login-box-msg" style="font-size:16px;"></p>
     <form action="<?= base_url('login/auth');?>" method="POST">
       <div class="form-group has-feedback">
@@ -83,8 +84,8 @@
   <!-- /.login-box-body -->
   <br/>
   <footer>
-    <div class="login-box-body text-center bg-blue">
-       <a style="color: yellow;"> Copyright &copy; Perpustakaan Al-Hasaniyah - <?php echo date("Y");?>
+    <div class="login-box-body text-center">
+       <a> Copyright &copy; Perpustakaan Al-Hasaniyah - <?php echo date("Y");?></a>
     </div>
   </footer>
 </div>

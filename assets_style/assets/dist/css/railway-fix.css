@@ -1,0 +1,121 @@
+/* Railway Fix CSS - Fix broken login display */
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f6f9;
+}
+
+.login-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background-size: cover !important;
+    position: relative;
+}
+
+.login-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 1;
+}
+
+.login-box {
+    position: relative;
+    z-index: 2;
+    width: 360px;
+    margin: 0 auto;
+    padding-top: 10vh;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-logo a {
+    color: #fff !important;
+    font-size: 24px;
+    text-decoration: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.login-box-body {
+    background: rgba(255,255,255,0.95) !important;
+    border: none !important;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.login-box-msg {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-control {
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    padding: 12px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: #667eea;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+footer {
+    text-align: center;
+}
+
+footer .login-box-body {
+    background: rgba(102, 126, 234, 0.9) !important;
+    color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+footer a {
+    color: #fff !important;
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-box {
+        width: 90%;
+        padding-top: 5vh;
+    }
+    
+    .login-box-body {
+        padding: 20px;
+    }
+} 
