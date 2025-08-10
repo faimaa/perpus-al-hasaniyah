@@ -54,7 +54,7 @@
   </div>
   <div id="tampilalert"></div>
   <!-- /.login-logo -->
-  <div class="login-box-body" style="border:2px solid #226bbf; background:rgba(255,255,255,0.5); box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+  <div class="login-box-body">
     <p class="login-box-msg" style="font-size:16px;"></p>
     <form action="<?= base_url('login/auth');?>" method="POST">
       <div class="form-group has-feedback">
