@@ -1,0 +1,356 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class User extends CI_Controller {
+	function __construct(){
+	 parent::__construct();
+	 	//validasi jika user belum login
+     $this->data['CI'] =& get_instance();
+     $this->load->helper(array('form', 'url'));
+     $this->load->model('M_Admin');
+     	if($this->session->userdata('masuk_perpus') != TRUE){
+			$url=base_url('login');
+			redirect($url);
+		}
+     }
+     
+    public function index()
+    {	
+        $this->data['idbo'] = $this->session->userdata('ses_id');
+        $this->data['user'] = $this->M_Admin->get_table('tbl_login');
+
+        $this->data['title_web'] = 'Data User ';
+        $this->load->view('header_view',$this->data);
+        $this->load->view('sidebar_view',$this->data);
+        $this->load->view('user/user_view',$this->data);
+        $this->load->view('footer_view',$this->data);
+    }
+
+    public function tambah()
+    {	
+        $this->data['idbo'] = $this->session->userdata('ses_id');
+        $this->data['user'] = $this->M_Admin->get_table('tbl_login');
+        
+        $this->data['title_web'] = 'Tambah User ';
+        $this->load->view('header_view',$this->data);
+        $this->load->view('sidebar_view',$this->data);
+        $this->load->view('user/tambah_view',$this->data);
+        $this->load->view('footer_view',$this->data);
+    }
+
+    public function add()
+    {
+		// format tabel / kode baru 3 hurup / id tabel / order by limit ngambil data terakhir
+		$id = $this->M_Admin->buat_kode('tbl_login','AG','id_login','ORDER BY id_login DESC LIMIT 1'); 
+        $nama = htmlentities($this->input->post('nama',TRUE));
+        $user = htmlentities($this->input->post('user',TRUE));
+        $pass = md5(htmlentities($this->input->post('pass',TRUE)));
+        $level = htmlentities($this->input->post('level',TRUE));
+        $jenkel = htmlentities($this->input->post('jenkel',TRUE));
+        $telepon = htmlentities($this->input->post('telepon',TRUE));
+        $status = htmlentities($this->input->post('status',TRUE));
+        $alamat = htmlentities($this->input->post('alamat',TRUE));
+		$email = $_POST['email'];
+		
+		$dd = $this->db->query("SELECT * FROM tbl_login WHERE user = '$user' OR email = '$email'");
+		if($dd->num_rows() > 0)
+		{
+			$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-warning">
+			<p> Gagal Update User : '.$nama.' !, Username / Email Anda Sudah Terpakai</p>
+			</div></div>');
+			redirect(base_url('user/tambah')); 
+		}else{
+            // setting konfigurasi upload
+            $nmfile = "user_".time();
+            $config['upload_path'] = './assets_style/image/';
+            $config['allowed_types'] = 'gif|jpg|jpeg|png';
+            $config['file_name'] = $nmfile;
+            // load library upload
+            $this->load->library('upload', $config);
+            // upload gambar 1
+            $this->upload->do_upload('gambar');
+            $result1 = $this->upload->data();
+            $result = array('gambar'=>$result1);
+            $data1 = array('upload_data' => $this->upload->data());
+            $data = array(
+				'anggota_id' => $id,
+                'nama'=>$nama,
+                'user'=>$user,
+                'pass'=>$pass,
+                'level'=>$level,
+                'tempat_lahir'=>$_POST['lahir'],
+                'tgl_lahir'=>$_POST['tgl_lahir'],
+                'level'=>$level,
+                'email'=>$_POST['email'],
+                'telepon'=>$telepon,
+                'foto'=>$data1['upload_data']['file_name'],
+                'jenkel'=>$jenkel,
+                'alamat'=>$alamat,
+                'tgl_bergabung'=>date('Y-m-d')
+            );
+			$this->db->insert('tbl_login',$data);
+			
+            $this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+            <p> Daftar User telah berhasil !</p>
+            </div></div>');
+			redirect(base_url('user?updated=1'));
+		}    
+      
+    }
+
+    public function edit()
+    {	
+		if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
+			if($this->uri->segment('3') == ''){ echo '<script>alert("halaman tidak ditemukan");window.location="'.base_url('user').'";</script>';}
+			$this->data['idbo'] = $this->session->userdata('ses_id');
+			$count = $this->M_Admin->CountTableId('tbl_login','id_login',$this->uri->segment('3'));
+			if($count > 0)
+			{			
+				$this->data['user'] = $this->M_Admin->get_tableid_edit('tbl_login','id_login',$this->uri->segment('3'));
+			}else{
+				echo '<script>alert("USER TIDAK DITEMUKAN");window.location="'.base_url('user').'"</script>';
+			}
+			
+		}elseif($this->session->userdata('level') == 'Anggota'){
+			$this->data['idbo'] = $this->session->userdata('ses_id');
+			$count = $this->M_Admin->CountTableId('tbl_login','id_login',$this->uri->segment('3'));
+			if($count > 0)
+			{			
+				$this->data['user'] = $this->M_Admin->get_tableid_edit('tbl_login','id_login',$this->session->userdata('ses_id'));
+			}else{
+				echo '<script>alert("USER TIDAK DITEMUKAN");window.location="'.base_url('user').'"</script>';
+			}
+		}
+        $this->data['title_web'] = 'Edit User ';
+        $this->load->view('header_view',$this->data);
+        $this->load->view('sidebar_view',$this->data);
+        $this->load->view('user/edit_view',$this->data);
+        $this->load->view('footer_view',$this->data);
+	}
+	
+	public function detail()
+    {	
+		if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
+			if($this->uri->segment('3') == ''){ echo '<script>alert("halaman tidak ditemukan");window.location="'.base_url('user').'";</script>';}
+			$this->data['idbo'] = $this->session->userdata('ses_id');
+			$count = $this->M_Admin->CountTableId('tbl_login','id_login',$this->uri->segment('3'));
+			if($count > 0)
+			{			
+				$this->data['user'] = $this->M_Admin->get_tableid_edit('tbl_login','id_login',$this->uri->segment('3'));
+			}else{
+				echo '<script>alert("USER TIDAK DITEMUKAN");window.location="'.base_url('user').'"</script>';
+			}		
+		}elseif($this->session->userdata('level') == 'Anggota'){
+			$this->data['idbo'] = $this->session->userdata('ses_id');
+			$count = $this->M_Admin->CountTableId('tbl_login','id_login',$this->session->userdata('ses_id'));
+			if($count > 0)
+			{			
+				$this->data['user'] = $this->M_Admin->get_tableid_edit('tbl_login','id_login',$this->session->userdata('ses_id'));
+			}else{
+				echo '<script>alert("USER TIDAK DITEMUKAN");window.location="'.base_url('user').'"</script>';
+			}
+		}
+        $this->data['title_web'] = 'Print Kartu Anggota ';
+        $this->load->view('user/detail',$this->data);
+    }
+
+    public function upd()
+    {
+        $nama = htmlentities($this->input->post('nama',TRUE));
+        $user = htmlentities($this->input->post('user',TRUE));
+        $pass = htmlentities($this->input->post('pass'));
+        $level = htmlentities($this->input->post('level',TRUE));
+        $jenkel = htmlentities($this->input->post('jenkel',TRUE));
+        $telepon = htmlentities($this->input->post('telepon',TRUE));
+        $status = htmlentities($this->input->post('status',TRUE));
+        $alamat = htmlentities($this->input->post('alamat',TRUE));
+        $id_login = htmlentities($this->input->post('id_login',TRUE));
+
+        // setting konfigurasi upload
+        $nmfile = "user_".time();
+        $config['upload_path'] = './assets_style/image/';
+        $config['allowed_types'] = 'gif|jpg|jpeg|png';
+        $config['file_name'] = $nmfile;
+        // load library upload
+        $this->load->library('upload', $config);
+		// upload gambar 1
+		
+        
+		if(!$this->upload->do_upload('gambar'))
+		{
+			if($this->input->post('pass') !== ''){
+				$data = array(
+					'nama'=>$nama,
+					'user'=>$user,
+					'pass'=>md5($pass),
+					'tempat_lahir'=>$_POST['lahir'],
+					'tgl_lahir'=>$_POST['tgl_lahir'],
+					'level'=>$level,
+					'email'=>$_POST['email'],
+					'telepon'=>$telepon,
+					'jenkel'=>$jenkel,
+					'alamat'=>$alamat,
+				);
+				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
+				}elseif($this->session->userdata('level') == 'Anggota'){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login.'?updated=1')); 
+				}
+			}else{
+				$data = array(
+					'nama'=>$nama,
+					'user'=>$user,
+					'tempat_lahir'=>$_POST['lahir'],
+					'tgl_lahir'=>$_POST['tgl_lahir'],
+					'level'=>$level,
+					'email'=>$_POST['email'],
+					'telepon'=>$telepon,
+					'jenkel'=>$jenkel,
+					'alamat'=>$alamat,
+				);
+				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
+			
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
+				}elseif($this->session->userdata('level') == 'Anggota'){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login)); 
+				} 
+			
+			}
+		}else{
+			$result1 = $this->upload->data();
+			$result = array('gambar'=>$result1);
+			$data1 = array('upload_data' => $this->upload->data());
+			unlink('./assets_style/image/'.$this->input->post('foto'));
+			if($this->input->post('pass') !== ''){
+				$data = array(
+					'nama'=>$nama,
+					'user'=>$user,
+					'tempat_lahir'=>$_POST['lahir'],
+					'tgl_lahir'=>$_POST['tgl_lahir'],
+					'pass'=>md5($pass),
+					'level'=>$level,
+					'email'=>$_POST['email'],
+					'telepon'=>$telepon,
+					'foto'=>$data1['upload_data']['file_name'],
+					'jenkel'=>$jenkel,
+					'alamat'=>$alamat
+				);
+				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
+			
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
+				}elseif($this->session->userdata('level') == 'Anggota'){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login.'?updated=1')); 
+				} 
+		
+			}else{
+				$data = array(
+					'nama'=>$nama,
+					'user'=>$user,
+					'tempat_lahir'=>$_POST['lahir'],
+					'tgl_lahir'=>$_POST['tgl_lahir'],
+					'level'=>$level,
+					'email'=>$_POST['email'],
+					'telepon'=>$telepon,
+					'foto'=>$data1['upload_data']['file_name'],
+					'jenkel'=>$jenkel,
+					'alamat'=>$alamat
+				);
+				$this->M_Admin->update_table('tbl_login','id_login',$id_login,$data);
+			
+				if(in_array($this->session->userdata('level'), ['Admin','Petugas'])){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login.'?updated=1'));  
+				}elseif($this->session->userdata('level') == 'Anggota'){
+
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Berhasil Update User : '.$nama.' !</p>
+					</div></div>');
+					redirect(base_url('user/edit/'.$id_login)); 
+				}
+			}
+		}
+    }
+    public function del()
+    {
+        if($this->uri->segment('3') == ''){ echo '<script>alert("halaman tidak ditemukan");window.location="'.base_url('user').'";</script>';}
+        
+        $user = $this->M_Admin->get_tableid_edit('tbl_login','id_login',$this->uri->segment('3'));
+        
+        // Hapus file foto dengan error handling yang lebih robust
+        if($user->foto && !empty($user->foto)) {
+            $file_path = './assets_style/image/'.$user->foto;
+            if(file_exists($file_path)) {
+                // Coba hapus dengan chmod dulu
+                @chmod($file_path, 0777);
+                if(!@unlink($file_path)) {
+                    // Kalau masih gagal, log error tapi lanjutkan
+                    log_message('error', 'Gagal hapus file foto: ' . $file_path);
+                }
+            }
+        }
+        
+        // Dapatkan semua id_pinjam yang terkait dengan user ini
+        $pinjam_ids = $this->db->select('id_pinjam')
+                               ->where('anggota_id', $this->uri->segment('3'))
+                               ->get('tbl_pinjam')
+                               ->result_array();
+        
+        $pinjam_id_array = array_column($pinjam_ids, 'id_pinjam');
+        
+        // Hapus data pengembalian berdasarkan id_pinjam (bukan anggota_id)
+        if (!empty($pinjam_id_array)) {
+            $this->db->where_in('id_pinjam', $pinjam_id_array);
+            $this->db->delete('tbl_pengembalian');
+        }
+        
+        // Hapus data denda berdasarkan pinjam_id (bukan anggota_id)
+        if (!empty($pinjam_id_array)) {
+            $this->db->where_in('pinjam_id', $pinjam_id_array);
+            $this->db->delete('tbl_denda');
+        }
+        
+        // Hapus data history dulu sebelum hapus user (foreign key constraint)
+        $this->db->delete('tbl_history', array('anggota_id' => $this->uri->segment('3')));
+        
+        // Hapus data peminjaman
+        $this->db->delete('tbl_pinjam', array('anggota_id' => $this->uri->segment('3')));
+        
+        // Terakhir hapus user
+		$this->M_Admin->delete_table('tbl_login','id_login',$this->uri->segment('3'));
+		
+		$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-warning">
+		<p> Berhasil Hapus User !</p>
+		</div></div>');
+		redirect(base_url('user?updated=1'));  
+    }
+}
