@@ -17,8 +17,6 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/AdminLTE.min.css');?>">
   <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/responsivelogin.css');?>">
-  <!-- Railway Fix CSS -->
-  <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/railway-fix.css');?>">
   <!-- Login Background CSS -->
   <link rel="stylesheet" href="<?php echo base_url('assets_style/assets/dist/css/login-background.css');?>">
 
