@@ -365,16 +365,28 @@ class Data extends CI_Controller {
 
 
 			// Catat ke history transaksi
-			$this->db->insert('tbl_history', array(
+			$history_data = array(
 				'tanggal' => date('Y-m-d H:i:s'),
 				'tipe_transaksi' => 'Buku Rusak',
 				'kode_transaksi' => 'BR' . date('YmdHis'),
 				'buku_id' => $buku_id,
-				'anggota_id' => null, // Tidak ada anggota untuk rusak
 				'petugas_id' => $this->session->userdata('ses_id'),
 				'jumlah' => $jumlah_rusak,
 				'keterangan' => $keterangan
-			));
+			);
+			
+			// Hanya tambahkan anggota_id jika kolom tersebut ada dan bisa NULL
+			// Atau gunakan nilai default yang aman
+			try {
+				$this->db->insert('tbl_history', $history_data);
+			} catch (Exception $e) {
+				// Jika error karena anggota_id, coba tanpa kolom tersebut
+				log_message('debug', 'History insert failed, trying without anggota_id: ' . $e->getMessage());
+				
+				// Hapus anggota_id dari data jika ada
+				unset($history_data['anggota_id']);
+				$this->db->insert('tbl_history', $history_data);
+			}
 
 			$this->db->trans_complete();
 
@@ -426,49 +438,43 @@ class Data extends CI_Controller {
 		// tambah aksi form proses buku
 		if(!empty($this->input->post('tambah')))
 		{
-			$post= $this->input->post();
-			// Validasi field wajib
-			$required = [
-				'kategori' => 'Kategori',
-				'rak' => 'Rak',
-				'isbn' => 'ISBN',
-				'judul_buku' => 'Judul Buku',
-				'pengarang' => 'Pengarang',
-				'penerbit' => 'Penerbit',
-				'thn' => 'Tahun',
-				'jml' => 'Jumlah',
-			];
-			$empty_fields = [];
-			foreach($required as $key => $label) {
-				if(empty($post[$key])) {
-					$empty_fields[] = $label;
-				}
-			}
-			if(count($empty_fields) > 0) {
-				$msg = '<div id="notifikasi"><div class="alert alert-danger"><p>Isi kolom pada daftar: <b>'.implode(', ', $empty_fields).'</b>!</p></div></div>';
-				$this->session->set_flashdata('pesan', $msg);
-				redirect(base_url('data/bukutambah'));
-				return;
-			}
-			$buku_id = $this->M_Admin->buat_kode('tbl_buku','BK','id_buku','ORDER BY id_buku DESC LIMIT 1'); 
+			// Debug: Log input data
+			log_message('debug', 'Tambah buku - Input data: ' . json_encode($this->input->post()));
+			
+			$post = $this->input->post();
+			
+			// Generate buku_id otomatis
+			$last_book = $this->db->query("SELECT MAX(CAST(SUBSTRING(buku_id, 3) AS UNSIGNED)) as last_id FROM tbl_buku WHERE buku_id LIKE 'BK%'")->row();
+			$next_id = ($last_book && $last_book->last_id) ? $last_book->last_id + 1 : 1;
+			$buku_id = 'BK' . str_pad($next_id, 3, '0', STR_PAD_LEFT);
+			
 			$data = array(
-				'buku_id'=>$buku_id,
+				'buku_id' => $buku_id,
 				'id_kategori'=>htmlentities($post['kategori']), 
 				'id_rak' => htmlentities($post['rak']), 
 				'isbn' => htmlentities($post['isbn']), 
-				'judul_buku'  => htmlentities($post['judul_buku']), 
+				'title' => htmlentities($post['judul_buku']), // Gunakan 'title' bukan 'judul_buku'
 				'pengarang'=> htmlentities($post['pengarang']), 
 				'penerbit'=> htmlentities($post['penerbit']),    
 				'thn_buku' => htmlentities($post['thn']), 
 				'isi' => $this->input->post('ket'), 
 				'jml'=> htmlentities($post['jml']),  
-				'status' => htmlentities($this->input->post('status')),  
 				'tgl_masuk' => date('Y-m-d H:i:s')
 			);
 
+			// Debug: Log prepared data
+			log_message('debug', 'Tambah buku - Prepared data: ' . json_encode($data));
+
 			// Initialize config array for uploads
 			$config = array();
-			$config['upload_path'] = './assets_style/image/buku/';
+			// Use writable path for Railway deployment
+			if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'railway') !== false) {
+				// Railway production - use tmp directory
+				$config['upload_path'] = '/tmp/';
+			} else {
+				// Local development
+				$config['upload_path'] = './assets_style/image/buku/';
+			}
 			$config['allowed_types'] = 'gif|jpg|jpeg|png'; 
 			$config['encrypt_name'] = TRUE;
 
@@ -483,9 +489,11 @@ class Data extends CI_Controller {
 					$this->upload->data();
 					$file1 = array('upload_data' => $this->upload->data());
 					$this->db->set('sampul', $file1['upload_data']['file_name']);
+					log_message('debug', 'Tambah buku - Image uploaded: ' . $file1['upload_data']['file_name']);
 				}else{
+					log_message('error', 'Tambah buku - Image upload failed: ' . $this->upload->display_errors());
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
-							<p> Tambah Buku Gagal !</p>
+							<p> Tambah Buku Gagal ! Error upload gambar: ' . $this->upload->display_errors() . '</p>
 						</div></div>');
 					redirect(base_url('data')); 
 				}
@@ -501,20 +509,43 @@ class Data extends CI_Controller {
 					$this->upload->data();
 					$file2 = array('upload_data' => $this->upload->data());
 					$this->db->set('lampiran', $file2['upload_data']['file_name']);
+					log_message('error', 'Tambah buku - PDF uploaded: ' . $file2['upload_data']['file_name']);
 				}else{
-
+					log_message('error', 'Tambah buku - PDF upload failed: ' . $this->upload->display_errors());
 					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
-							<p> Tambah Buku Gagal !</p>
+							<p> Tambah Buku Gagal ! Error upload PDF: ' . $this->upload->display_errors() . '</p>
 						</div></div>');
 					redirect(base_url('data')); 
 				}
 			}
 
-			$this->db->insert('tbl_buku', $data);
+			// Debug: Log final data before insert
+			log_message('debug', 'Tambah buku - Final data before insert: ' . json_encode($data));
 
-			$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
-			<p> Tambah Buku Sukses !</p>
-			</div></div>');
+			// Try to insert data with error handling
+			try {
+				$result = $this->db->insert('tbl_buku', $data);
+				
+				if ($result) {
+					$insert_id = $this->db->insert_id();
+					log_message('debug', 'Tambah buku - Insert successful, ID: ' . $insert_id);
+					
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-success">
+					<p> Tambah Buku Sukses ! ID: ' . $insert_id . ' | Kode: ' . $buku_id . '</p>
+					</div></div>');
+				} else {
+					log_message('error', 'Tambah buku - Insert failed: ' . $this->db->error()['message']);
+					$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
+					<p> Tambah Buku Gagal ! Error database: ' . $this->db->error()['message'] . '</p>
+					</div></div>');
+				}
+			} catch (Exception $e) {
+				log_message('error', 'Tambah buku - Exception: ' . $e->getMessage());
+				$this->session->set_flashdata('pesan','<div id="notifikasi"><div class="alert alert-danger">
+				<p> Tambah Buku Gagal ! Exception: ' . $e->getMessage() . '</p>
+				</div></div>');
+			}
+
 			redirect(base_url('data?updated=1')); 
 		}
 
@@ -537,7 +568,14 @@ class Data extends CI_Controller {
 
 			// Initialize config array for uploads in edit mode
 			$config = array();
-			$config['upload_path'] = './assets_style/image/buku/';
+			// Use writable path for Railway deployment
+			if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'railway') !== false) {
+				// Railway production - use tmp directory
+				$config['upload_path'] = '/tmp/';
+			} else {
+				// Local development
+				$config['upload_path'] = './assets_style/image/buku/';
+			}
 			$config['allowed_types'] = 'gif|jpg|jpeg|png'; 
 			$config['encrypt_name'] = TRUE;
 			
@@ -552,9 +590,12 @@ class Data extends CI_Controller {
 
 				if ($this->upload->do_upload('gambar')) {
 					$this->upload->data();
-					$gambar = './assets_style/image/buku/'.htmlentities($post['gmbr']);
-					if(file_exists($gambar)) {
-						unlink($gambar);
+					// Only try to delete file if it's local development
+					if (!isset($_SERVER['HTTP_HOST']) || strpos($_SERVER['HTTP_HOST'], 'railway') === false) {
+						$gambar = './assets_style/image/buku/'.htmlentities($post['gmbr']);
+						if(file_exists($gambar)) {
+							unlink($gambar);
+						}
 					}
 					$file1 = array('upload_data' => $this->upload->data());
 					$this->db->set('sampul', $file1['upload_data']['file_name']);
@@ -574,9 +615,12 @@ class Data extends CI_Controller {
 				// script uplaod file kedua
 				if ($this->upload->do_upload('lampiran')) {
 					$this->upload->data();
-					$lampiran = './assets_style/image/buku/'.htmlentities($post['lamp']);
-					if(file_exists($lampiran)) {
-						unlink($lampiran);
+					// Only try to delete file if it's local development
+					if (!isset($_SERVER['HTTP_HOST']) || strpos($_SERVER['HTTP_HOST'], 'railway') === false) {
+						$lampiran = './assets_style/image/buku/'.htmlentities($post['lamp']);
+						if(file_exists($lampiran)) {
+							unlink($lampiran);
+						}
 					}
 					$file2 = array('upload_data' => $this->upload->data());
 					$this->db->set('lampiran', $file2['upload_data']['file_name']);
