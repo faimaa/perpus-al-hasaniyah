@@ -23,8 +23,15 @@ date_default_timezone_set("Asia/Jakarta");
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = "http://".$_SERVER['HTTP_HOST'];
-$config['base_url'] .= preg_replace('@/+$@','',dirname($_SERVER['SCRIPT_NAME'])).'/';
+// Fix base_url for Railway deployment
+if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'railway') !== false) {
+    // Railway production environment
+    $config['base_url'] = 'https://perpus-al-hasaniyah-production-2fda.up.railway.app/';
+} else {
+    // Local development
+    $config['base_url'] = "http://".$_SERVER['HTTP_HOST'];
+    $config['base_url'] .= preg_replace('@/+$@','',dirname($_SERVER['SCRIPT_NAME'])).'/';
+}
 
 /*
 |--------------------------------------------------------------------------
