@@ -116,7 +116,7 @@ class Transaksi extends CI_Controller {
 				b.judul_buku,
 				b.isbn,
 				l1.nama as nama_petugas,
-				COALESCE(l2.nama, CONCAT('[ID:', h.anggota_id, ']')) as nama_anggota,
+					COALESCE(l2.nama, CONCAT('Anggota (ID: ', h.anggota_id, ')')) as nama_anggota,
 				d.denda as harga_denda
 			FROM tbl_history h
 			LEFT JOIN tbl_buku b ON h.buku_id = b.id_buku
